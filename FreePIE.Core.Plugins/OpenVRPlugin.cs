@@ -8,6 +8,12 @@ namespace FreePIE.Core.Plugins
     [GlobalType(Type = typeof(OpenVRGlobal))]
     public class OpenVRPlugin : Plugin
     {
+        const string Oculus = "Oculus";
+        const string OpenVR = "OpenVR";
+
+        private string m_vrEngine = OpenVR;
+        private VRAPI m_vrAPI;
+
         public OpenVrData Data;
         public OpenVrMapping Mapping;
 
@@ -23,17 +29,43 @@ namespace FreePIE.Core.Plugins
 
         public override bool GetProperty(int index, IPluginProperty property)
         {
-            return false;
+            if (index > 0)
+                return false;
+            
+            if (index == 0)
+            {
+                property.Name = "VREngine";
+                property.Caption = "VR Engine";
+
+                property.Choices.Add(Oculus, Oculus);
+                property.Choices.Add(OpenVR, OpenVR);
+
+                property.DefaultValue = OpenVR;
+                property.HelpText = "Select the engine for acessing the VR Device";
+            }
+
+            return true;
         }
 
         public override bool SetProperties(Dictionary<string, object> properties)
         {
+            m_vrEngine = (string)properties["VREngine"];
+
             return true;
         }
 
         public override Action Start()
         {
-            if (!Api.Init())
+            if (m_vrEngine == Oculus)
+            {
+                m_vrAPI = new OculusAPI();
+            }
+            else
+            {
+                m_vrAPI = new OpenVRAPI();
+            }
+
+            if (!m_vrAPI.Init())
                 throw new Exception("Open VR SDK failed to init");
 
             // oculus defaults
@@ -48,23 +80,23 @@ namespace FreePIE.Core.Plugins
 
         public override void Stop()
         {
-            Api.Dispose();
+            m_vrAPI.Dispose();
         }
 
         public override void DoBeforeNextExecute()
         {
-            Api.Read(out Data);
+            m_vrAPI.Read(out Data);
             OnUpdate();
         }
 
         public void Center()
         {
-            Api.Center();
+            m_vrAPI.Center();
         }
 
         public void TriggerHapticPulse(uint controllerIndex, uint durationMicroSec, float frequency, float amplitude)
         {
-            Api.TriggerHapticPulse(controllerIndex, durationMicroSec, frequency, amplitude);
+            m_vrAPI.TriggerHapticPulse(controllerIndex, durationMicroSec, frequency, amplitude);
         }
 
         public float GetButtonState(bool left, ulong button)

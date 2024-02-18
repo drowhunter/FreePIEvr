@@ -91,6 +91,7 @@
                       $(Lib)\IO\Binaries\Release-DllMultiThreadRuntime\*.dll;
                       $(Lib)\IO\Binaries\Release-DllMultiThreadRuntime-x64\*.dll;
                       $(Lib)\OculusVR\Binaries\*.dll;
+                      $(Lib)\OpenVR\Binaries\*.dll;
                       $(Lib)\VJoy\*.dll;
                       $(Lib)\Sixense\Emulation\Binary\*.dll;
                       $(Lib)\Midi\*.dll;

@@ -87,7 +87,7 @@ namespace FreePIE.Core.Plugins
         public void CreateDualShockController()
         {
             if (Client == null)
-                return;
+                throw new Exception(ErrorMessage);
 
             if (DualShockController != null)
                 return;
@@ -99,7 +99,7 @@ namespace FreePIE.Core.Plugins
         public void CreateXBoxController()
         {
             if (Client == null)
-                return;
+                throw new Exception(ErrorMessage);
 
             if (XBoxController != null)
                 return;
@@ -189,6 +189,9 @@ namespace FreePIE.Core.Plugins
             {
                 case VigemController.DualShockController:
                     {
+                        if (plugin.DualShockController == null)
+                            throw new Exception("Create controller first: vigem.CreateController(VigemController.DualShockController)");
+
                         switch (direction)
                         {
                             case VigemDPadDirection.Northwest:
@@ -223,6 +226,9 @@ namespace FreePIE.Core.Plugins
                     }
                 case VigemController.XBoxController:
                     {
+                        if (plugin.XBoxController == null)
+                            throw new Exception("Create controller first: vigem.CreateController(VigemController.XBoxController)");
+
                         bool left = false;
                         bool right = false;
                         bool up = false;
@@ -279,6 +285,9 @@ namespace FreePIE.Core.Plugins
             {
                 case VigemController.DualShockController:
                     {
+                        if (plugin.DualShockController == null)
+                            throw new Exception("Create controller first: vigem.CreateController(VigemController.DualShockController)");
+
                         if (left)
                         {
                             if (up)
@@ -328,6 +337,9 @@ namespace FreePIE.Core.Plugins
                     }
                 case VigemController.XBoxController:
                     {
+                        if (plugin.XBoxController == null)
+                            throw new Exception("Create controller first: vigem.CreateController(VigemController.XBoxController)");
+
                         plugin.XBoxController.SetButtonState(Xbox360Button.Left, left);
                         plugin.XBoxController.SetButtonState(Xbox360Button.Right, right);
                         plugin.XBoxController.SetButtonState(Xbox360Button.Up, up);
@@ -343,6 +355,9 @@ namespace FreePIE.Core.Plugins
             {
                 case VigemController.DualShockController:
                     {
+                        if (plugin.DualShockController == null)
+                            throw new Exception("Create controller first: vigem.CreateController(VigemController.DualShockController)");
+
                         DualShock4Button dualShockButton = null;
                         switch (button)
                         {
@@ -390,6 +405,9 @@ namespace FreePIE.Core.Plugins
                     }
                 case VigemController.XBoxController:
                     {
+                        if (plugin.XBoxController == null)
+                            throw new Exception("Create controller first: vigem.CreateController(VigemController.XBoxController)");
+
                         Xbox360Button xboxButton = null;
                         switch (button)
                         {
@@ -447,6 +465,9 @@ namespace FreePIE.Core.Plugins
             switch (controller)
             {
                 case VigemController.DualShockController:
+                    if (plugin.DualShockController == null)
+                        throw new Exception("Create controller first: vigem.CreateController(VigemController.DualShockController)");
+
                     switch (side)
                     {
                         case VigemSide.Left:
@@ -458,6 +479,9 @@ namespace FreePIE.Core.Plugins
                     }
                     break;
                 case VigemController.XBoxController:
+                    if (plugin.XBoxController == null)
+                        throw new Exception("Create controller first: vigem.CreateController(VigemController.XBoxController)");
+
                     switch (side)
                     {
                         case VigemSide.Left:
@@ -472,11 +496,13 @@ namespace FreePIE.Core.Plugins
         }
 
         public void SetStick(VigemController controller, VigemSide side, float x, float y)
-        {
-           
+        {           
             switch (controller)
             {
                 case VigemController.DualShockController:
+                    if (plugin.DualShockController == null)
+                        throw new Exception("Create controller first: vigem.CreateController(VigemController.DualShockController)");
+
                     byte byteX = (byte)Math.Max(byte.MinValue, Math.Min(byte.MaxValue, byte.MaxValue * (0.5f + 0.5 * x)));
                     byte byteY = (byte)Math.Max(byte.MinValue, Math.Min(byte.MaxValue, byte.MaxValue * (0.5f + 0.5 * y)));
 
@@ -493,6 +519,9 @@ namespace FreePIE.Core.Plugins
                     }
                     break;
                 case VigemController.XBoxController:
+                    if (plugin.XBoxController == null)
+                        throw new Exception("Create controller first: vigem.CreateController(VigemController.XBoxController)");
+
                     short shortX = (short)Math.Max(short.MinValue, Math.Min(short.MaxValue, short.MaxValue * x));
                     short shortY = (short)Math.Max(short.MinValue, Math.Min(short.MaxValue, short.MaxValue * y));
                     switch (side)
