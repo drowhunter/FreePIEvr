@@ -58,6 +58,20 @@ int ovr_freepie_setPose(ovrPosef *pose, ovr_freepie_6dof *dof)
 	return  0;
 }
 
+float ovr_freepie_getButton(ovrInputState* state, ovrButton button)
+{
+	if (state->Buttons & button)
+	{
+		return 1.0f;
+	}
+	if (state->Touches & button)
+	{
+		return 0.5f;
+	}
+	
+	return 0.0f;
+}
+
 int ovr_freepie_read(ovr_freepie_data *output)
 {
 	HmdFrameTiming = ovr_GetPredictedDisplayTime(HMD, 0);
@@ -91,13 +105,17 @@ int ovr_freepie_read(ovr_freepie_data *output)
 		output->RightStickAxes[0] = inputState.Thumbstick[ovrHand_Right].x;
 		output->RightStickAxes[1] = inputState.Thumbstick[ovrHand_Right].y;
 
-		output->LeftButtonsPressed = output->RightButtonsPressed = inputState.Buttons;
-		output->LeftButtonsTouched = output->RightButtonsTouched = inputState.Touches;
+		output->LeftStick = ovr_freepie_getButton(&inputState, ovrButton::ovrButton_LThumb);
+		output->RightStick = ovr_freepie_getButton(&inputState, ovrButton::ovrButton_RThumb);
+		output->A = ovr_freepie_getButton(&inputState, ovrButton::ovrButton_A);
+		output->B = ovr_freepie_getButton(&inputState, ovrButton::ovrButton_B);
+		output->X = ovr_freepie_getButton(&inputState, ovrButton::ovrButton_X);
+		output->Y = ovr_freepie_getButton(&inputState, ovrButton::ovrButton_Y);
 	}
 
 	return 0;
 }
-int ovr_freepie_trigger_haptic_pulse(unsigned int controllerIndex, unsigned int durationMicroSec, float frequency, float amplitude)
+int ovr_freepie_trigger_haptic_pulse(unsigned int controllerIndex, float duration, float frequency, float amplitude)
 {
 	if (controllerIndex == 0)
 	{

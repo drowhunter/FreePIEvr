@@ -40,30 +40,18 @@ namespace FreePIE.Core.Plugins.OculusVR
         public Pointf LeftStickAxes;
         public Pointf RightStickAxes;
 
-        public ulong LeftButtonsPressed;
-        public ulong LeftButtonsTouched;
+        public float LeftStick;
+        public float RightStick;
 
-        public ulong RightButtonsPressed;
-        public ulong RightButtonsTouched;
+        public float A;
+        public float B;
+        public float X;
+        public float Y;
 
         public uint HeadStatus;
         public uint LeftTouchStatus;
         public uint RightTouchStatus;
 
         public uint IsHmdMounted;
-    }
-
-    public struct OpenVrMapping
-    {
-        public ulong A;
-        public ulong B;
-        public ulong X;
-        public ulong Y;
-        public ulong LeftStick;
-        public ulong RightStick;
-        public ulong LeftThumb;
-        public ulong RightThumb;
-        public ulong Menu;
-        public ulong Home;
     }
 }

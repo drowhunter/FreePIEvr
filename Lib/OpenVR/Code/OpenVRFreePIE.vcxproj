@@ -144,6 +144,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\ovr_freepie.h" />
+    <ClInclude Include="src\PathToolsExcerpt.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ovr_freepie.cpp" />

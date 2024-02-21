@@ -1,0 +1,158 @@
+{
+   "bindings" : {
+      "/actions/freepie" : {
+         "poses" : [
+            {
+               "output" : "/actions/freepie/in/pose_left",
+               "path" : "/user/hand/left/pose/handgrip"
+            },
+            {
+               "output" : "/actions/freepie/in/pose_right",
+               "path" : "/user/hand/right/pose/handgrip"
+            }
+         ],
+         "skeleton" : [
+            {
+               "output" : "/actions/freepie/in/hand_left",
+               "path" : "/user/hand/left/input/skeleton/left"
+            },
+            {
+               "output" : "/actions/freepie/in/hand_right",
+               "path" : "/user/hand/right/input/skeleton/right"
+            }
+         ],
+         "sources" : [
+            {
+               "inputs" : {
+                  "pull" : {
+                     "output" : "/actions/freepie/in/trigger_left"
+                  }
+               },
+               "mode" : "trigger",
+               "path" : "/user/hand/left/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "pull" : {
+                     "output" : "/actions/freepie/in/trigger_right"
+                  }
+               },
+               "mode" : "trigger",
+               "path" : "/user/hand/right/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "pull" : {
+                     "output" : "/actions/freepie/in/grip_left"
+                  }
+               },
+               "mode" : "trigger",
+               "path" : "/user/hand/left/input/grip"
+            },
+            {
+               "inputs" : {
+                  "pull" : {
+                     "output" : "/actions/freepie/in/grip_right"
+                  }
+               },
+               "mode" : "trigger",
+               "path" : "/user/hand/right/input/grip"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/freepie/in/analog_click_left"
+                  },
+                  "touch" : {
+                     "output" : "/actions/freepie/in/analog_touch_left"
+                  },
+                  "position" : {
+                     "output" : "/actions/freepie/in/analog_left"
+                  }
+               },
+               "mode" : "joystick",
+               "path" : "/user/hand/left/input/joystick"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/freepie/in/analog_click_right"
+                  },
+                  "touch" : {
+                     "output" : "/actions/freepie/in/analog_touch_right"
+                  },
+                  "position" : {
+                     "output" : "/actions/freepie/in/analog_right"
+                  }
+               },
+               "mode" : "joystick",
+               "path" : "/user/hand/right/input/joystick"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/freepie/in/button_x"
+                  },
+                  "touch" : {
+                     "output" : "/actions/freepie/in/button_touch_x"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/left/input/x"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/freepie/in/button_y"
+                  },
+                  "touch" : {
+                     "output" : "/actions/freepie/in/button_touch_y"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/left/input/y"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/freepie/in/button_a"
+                  },
+                  "touch" : {
+                     "output" : "/actions/freepie/in/button_touch_a"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/right/input/a"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/freepie/in/button_b"
+                  },
+                  "touch" : {
+                     "output" : "/actions/freepie/in/button_touch_b"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/right/input/b"
+            }
+         ],
+         "haptics" : [
+            {
+               "output" : "/actions/freepie/out/haptic_left",
+               "path" : "/user/hand/left/output/haptic"
+            },
+            {
+               "output" : "/actions/freepie/out/haptic_right",
+               "path" : "/user/hand/right/output/haptic"
+            }
+         ]
+      }
+   },
+   "category" : "steamvr_input",
+   "controller_type" : "oculus_touch",
+   "description" : "Bindings for the FreePIE OpenVR SDK plugin for the Oculus Touch",
+   "name" : "Bindings for the FreePIE OpenVR SDK plugin for the Oculus Touch",
+   "options" : {},
+   "simulated_actions" : []
+}

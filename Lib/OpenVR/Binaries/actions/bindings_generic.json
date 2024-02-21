@@ -1,0 +1,49 @@
+{
+	"bindings" : {
+		"/actions/freepie" : {
+			"poses" : [
+				{
+					"output" : "/actions/freepie/in/pose_left",
+					"path" : "/user/hand/left/pose/raw"
+				},
+				{
+					"output" : "/actions/freepie/in/pose_right",
+					"path" : "/user/hand/right/pose/raw"
+				}
+			],
+			"sources" : [
+				{
+					"inputs" : {
+						"position" : {
+							"output" : "/actions/freepie/in/analog_left"
+						}
+					},
+					"mode" : "trackpad",
+					"path" : "/user/hand/left/input/trackpad"
+				},
+				{
+					"inputs" : {
+						"position" : {
+							"output" : "/actions/freepie/in/analog_right"
+						}
+					},
+					"mode" : "trackpad",
+					"path" : "/user/hand/right/input/trackpad"
+				}
+			],
+			"haptics" : [
+				{
+					"output" : "/actions/freepie/out/haptic_left",
+					"path" : "/user/hand/left/output/haptic"
+				},
+				{
+					"output" : "/actions/freepie/out/haptic_right",
+					"path" : "/user/hand/right/output/haptic"
+				}
+			]
+		}
+	},
+	"controller_type" : "generic",
+	"description" : "Bindings for the FreePIE OpenVR plugin for a generic controller",
+	"name" : "FreePIE bindings for a generic controller"
+}

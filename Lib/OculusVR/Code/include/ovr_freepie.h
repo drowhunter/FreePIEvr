@@ -25,11 +25,13 @@ typedef struct ovr_freepie_data {
 	float LeftStickAxes[2];
 	float RightStickAxes[2];
 
-	unsigned long long LeftButtonsPressed;
-	unsigned long long LeftButtonsTouched;
+	float LeftStick;
+	float RightStick;
 
-	unsigned long long RightButtonsPressed;
-	unsigned long long RightButtonsTouched;
+	float A;
+	float B;
+	float X;
+	float Y;
 
 	unsigned int StatusHead;
 	unsigned int StatusLeftHand;
@@ -42,6 +44,6 @@ int ovr_freepie_init();
 int ovr_freepie_read(ovr_freepie_data* output);
 int ovr_freepie_destroy();
 int ovr_freepie_reset_orientation();
-int ovr_freepie_trigger_haptic_pulse(unsigned int controllerIndex, unsigned int durationMicroSec, float frequency, float amplitude);
+int ovr_freepie_trigger_haptic_pulse(unsigned int controllerIndex, float duration, float frequency, float amplitude);
 
 #endif
