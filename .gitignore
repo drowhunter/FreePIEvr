@@ -74,3 +74,17 @@ InstallerTemp
 /Lib/OpenVR/Code/LibOVR/OVR_ErrorCode.h
 /Lib/OpenVR/Code/LibOVR/OVR_Version.h
 /Lib/OpenVR/Code/Release
+/Lib/OpenXR/Code/.vs
+/Lib/OpenXR/Code/binaries/Win32/Release
+/Lib/OpenXR/Code/Debug
+/Lib/OpenXR/Code/LibOVR/openxr.h
+/Lib/OpenXR/Code/LibOVR/openxr_loader.dll
+/Lib/OpenXR/Code/LibOVR/openxr_loader.lib
+/Lib/OpenXR/Code/LibOVR/openxr_loader_negotiation.h
+/Lib/OpenXR/Code/LibOVR/openxr_platform.h
+/Lib/OpenXR/Code/LibOVR/openxr_platform_defines.h
+/Lib/OpenXR/Code/LibOVR/openxr_reflection.h
+/Lib/OpenXR/Code/LibOVR/openxr_reflection_parent_structs.h
+/Lib/OpenXR/Code/LibOVR/openxr_reflection_structs.h
+/Lib/OpenXR/Code/Release
+/Lib/OpenXR/Chapter4
