@@ -37,6 +37,7 @@ namespace FreePIE.GUI.Common.AvalonEdit
         {
             TextArea.Caret.PositionChanged += CaretPositionChanged;
             SearchPanel.Install(TextArea);
+            this.Options.ConvertTabsToSpaces = true;
         }
         
         private void CaretPositionChanged(object sender, EventArgs e)
