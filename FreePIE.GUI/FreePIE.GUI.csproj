@@ -434,26 +434,28 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>md "$(TargetDir)plugins"
+    <PostBuildEvent>
+      md "$(TargetDir)plugins"
 
-md "$(TargetDir)help"
-copy "$(SolutionDir)\FreePIE.Core.Plugins\Help\*.rtf" "$(TargetDir)help"
-xcopy /S /I "$(SolutionDir)\Lib\IronPython\pylib\*" "$(TargetDir)pylib\"
-copy "$(SolutionDir)\Lib\TrackIR\NPClient.dll" "$(TargetDir)"
-copy "$(SolutionDir)\Lib\Wiimote\*.*" "$(TargetDir)"
-copy "$(SolutionDir)\Lib\PPJoyWrapper\*.*" "$(TargetDir)"
-copy "$(SolutionDir)\Lib\SlimDX\*.*" "$(TargetDir)"
-copy "$(SolutionDir)\Lib\piefreespace\*.dll" "$(TargetDir)"
-copy "$(SolutionDir)\Lib\Sixense\*.dll" "$(TargetDir)"
-copy "$(SolutionDir)\Lib\FreeTrack\*.dll" "$(TargetDir)"
-copy "$(SolutionDir)\Lib\Zeiss\*.dll" "$(TargetDir)"
-copy "$(SolutionDir)\Lib\YEI3-Space\*.dll" "$(TargetDir)"
-copy "$(SolutionDir)\Lib\IO\Binaries\Release-DllMultiThreadRuntime\*.dll" "$(TargetDir)"
-copy "$(SolutionDir)\Lib\OculusVR\Binaries\*.dll" "$(TargetDir)"
-copy "$(SolutionDir)\Lib\OpenVR\Binaries\*.dll" "$(TargetDir)"
-copy "$(SolutionDir)\Lib\VJoy\*.dll" "$(TargetDir)"
-copy "$(SolutionDir)\Lib\Midi\*.dll" "$(TargetDir)"
-copy "$(SolutionDir)\Lib\Tobii\*.dll" "$(TargetDir)"</PostBuildEvent>
+      md "$(TargetDir)help"
+      copy "$(SolutionDir)\FreePIE.Core.Plugins\Help\*.rtf" "$(TargetDir)help"
+      xcopy /S /I "$(SolutionDir)\Lib\IronPython\pylib\*" "$(TargetDir)pylib\"
+      copy "$(SolutionDir)\Lib\TrackIR\NPClient.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Lib\Wiimote\*.*" "$(TargetDir)"
+      copy "$(SolutionDir)\Lib\PPJoyWrapper\*.*" "$(TargetDir)"
+      copy "$(SolutionDir)\Lib\SlimDX\*.*" "$(TargetDir)"
+      copy "$(SolutionDir)\Lib\piefreespace\*.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Lib\Sixense\*.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Lib\FreeTrack\*.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Lib\Zeiss\*.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Lib\YEI3-Space\*.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Lib\IO\Binaries\Release-DllMultiThreadRuntime\*.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Lib\OculusVR\Binaries\*.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Lib\OpenVR\Binaries\*.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Lib\OpenXR\Binaries\*.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Lib\VJoy\*.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Lib\Midi\*.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Lib\Tobii\*.dll" "$(TargetDir)"</PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -10,6 +10,7 @@ namespace FreePIE.Core.Plugins
     {
         const string Oculus = "Oculus";
         const string OpenVR = "OpenVR";
+        const string OpenXR = "OpenXR";
 
         private string m_vrEngine = OpenVR;
         private VRAPI m_vrAPI;
@@ -38,6 +39,7 @@ namespace FreePIE.Core.Plugins
 
                 property.Choices.Add(Oculus, Oculus);
                 property.Choices.Add(OpenVR, OpenVR);
+                property.Choices.Add("OpenXR (experimental)", OpenXR);
 
                 property.DefaultValue = OpenVR;
                 property.HelpText = "Select the engine for acessing the VR Device";
@@ -55,18 +57,22 @@ namespace FreePIE.Core.Plugins
 
         public override Action Start()
         {
-            if (m_vrEngine == Oculus)
+            switch (m_vrEngine)
             {
-                m_vrAPI = new OculusAPI();
-            }
-            else
-            {
-                m_vrAPI = new OpenVRAPI();
+                case Oculus:
+                    m_vrAPI = new OculusAPI();
+                    break;
+                case OpenXR:
+                    m_vrAPI = new OpenXRAPI();
+                    break;
+                default:            
+                    m_vrAPI = new OpenVRAPI();
+                    break;
             }
 
             int error = m_vrAPI.Init();
             if (error != 0)
-                throw new Exception($"Open VR SDK failed to init ({error})");
+                throw new Exception($"{m_vrEngine} SDK failed to init ({error})");
 
             return null;
         }
