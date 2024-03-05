@@ -88,3 +88,10 @@ InstallerTemp
 /Lib/OpenXR/Code/LibOVR/openxr_reflection_structs.h
 /Lib/OpenXR/Code/Release
 /Lib/OpenXR/Chapter4
+/Lib/OculusVR/Code/binaries/x64/Release
+/Lib/OpenVR/Code/binaries/x64/Release
+/Lib/OpenVR/Code/LibOVR/Win32
+/Lib/OpenVR/Code/LibOVR/Win64
+/Lib/OpenXR/Code/binaries/x64/Release
+/Lib/OpenXR/Code/LibOVR/Win32
+/Lib/OpenXR/Code/LibOVR/Win64
