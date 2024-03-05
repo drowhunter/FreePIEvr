@@ -5,6 +5,7 @@ using System.Text;
 
 namespace FreePIE.Core.Plugins.Wiimote
 {
+    /*
     public class StatusGlobal : Subscribable
     {
         private const int LED1_MASK = 0x10;
@@ -55,5 +56,5 @@ namespace FreePIE.Core.Plugins.Wiimote
         {
             plugin.RequestStatus(data.WiimoteNumber);
         }
-    }
+    }*/
 }

@@ -25,7 +25,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -37,7 +37,7 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Prefer32Bit>false</Prefer32Bit>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CannedBytes">
@@ -62,9 +62,9 @@
     <Reference Include="PPJoyWrapper">
       <HintPath>..\Lib\PPJoyWrapper\PPJoyWrapper.dll</HintPath>
     </Reference>
-    <Reference Include="SlimDX, Version=4.0.11.43, Culture=neutral, PublicKeyToken=b1b0c32fd1ffe4f9, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Lib\SlimDX\SlimDX.dll</HintPath>
+    <Reference Include="SlimDX, Version=4.0.13.43, Culture=neutral, PublicKeyToken=b1b0c32fd1ffe4f9, processorArchitecture=x86">
+      <HintPath>..\packages\SlimDX.4.0.13.44\lib\NET40\SlimDX.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -83,20 +83,20 @@
     <Compile Include="..\VersionInfo.cs">
       <Link>VersionInfo.cs</Link>
     </Compile>
-    <Compile Include="AhrsImuPlugin.cs" />
-    <Compile Include="AndroidPlugin.cs" />
-    <Compile Include="ApplePlugin.cs" />
+    <None Include="AhrsImuPlugin.cs2" />
+    <None Include="AndroidPlugin.cs2" />
+    <None Include="ApplePlugin.cs2" />
     <Compile Include="ComDevicePlugin.cs" />
-    <Compile Include="FreeImuPlugin.cs" />
+    <None Include="FreeImuPlugin.cs2" />
     <Compile Include="FreePieIOPlugin.cs" />
-    <Compile Include="FreeSpacePlugin.cs" />
-    <Compile Include="FreeTrackPlugin.cs" />
+    <None Include="FreeSpacePlugin.cs2" />
+    <None Include="FreeTrackPlugin.cs2" />
     <Compile Include="Globals\GlobalIndexer.cs" />
-    <Compile Include="HydraPlugin.cs" />
+    <None Include="HydraPlugin.cs2" />
     <Compile Include="Hydra\EmulatedData.cs" />
     <Compile Include="Hydra\HydraSpoof.cs" />
     <Compile Include="Hydra\Sixense.cs" />
-    <Compile Include="JoystickPlugin.cs" />
+    <None Include="JoystickPlugin.cs2" />
     <Compile Include="KeyboardPlugin.cs" />
     <Compile Include="MemoryMapping\ArgumentExtension.cs" />
     <Compile Include="MemoryMapping\DisconnectedFreepieData.cs" />
@@ -106,7 +106,7 @@
     <Compile Include="MemoryMapping\SharedMemoryWorker.cs" />
     <Compile Include="MemoryMapping\TrackIRWorker.cs" />
     <Compile Include="MemoryMapping\WorkerProcess.cs" />
-    <Compile Include="MidiPlugin.cs" />
+    <None Include="MidiPlugin.cs2" />
     <Compile Include="Midi\MidiStatus.cs" />
     <Compile Include="Midi\DataGlobal.cs" />
     <Compile Include="MouseKeyIO.cs" />
@@ -115,15 +115,15 @@
     <Compile Include="OpenVR\Api.cs" />
     <Compile Include="OpenVR\OpenVr6Dof.cs" />
     <Compile Include="Plugin.cs" />
-    <Compile Include="PPJoyPlugin.cs" />
+    <None Include="PPJoyPlugin.cs2" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SensorFusion\MahonyAHRS.cs" />
     <Compile Include="SensorFusion\Quaternion.cs" />
     <Compile Include="SpeechPlugin.cs" />
     <Compile Include="Strategies\GetPressedStrategy.cs" />
     <Compile Include="Strategies\SetPressedStrategy.cs" />
-    <Compile Include="TobiiEyeXPlugin.cs" />
-    <Compile Include="TrackIRPlugin.cs" />
+    <None Include="TobiiEyeXPlugin.cs2" />
+    <None Include="TrackIRPlugin.cs2" />
     <Compile Include="TrackIR\DllRegistrar.cs" />
     <Compile Include="TrackIR\HeadPoseData.cs" />
     <Compile Include="TrackIR\NativeDll.cs" />
@@ -131,8 +131,8 @@
     <Compile Include="TrackIR\TrackIRDll.cs" />
     <Compile Include="TrackIR\TrackIRHeadposeData.cs" />
     <Compile Include="VigemPlugin.cs" />
-    <Compile Include="VJoyPlugin.cs" />
-    <Compile Include="VuzixTrackerPlugin.cs" />
+    <None Include="VJoyPlugin.cs2" />
+    <None Include="VuzixTrackerPlugin.cs2" />
     <Compile Include="WiimotePlugin.cs" />
     <Compile Include="Wiimote\CapabilitiesGlobal.cs" />
     <Compile Include="Wiimote\AccelerationGlobal.cs" />
@@ -160,13 +160,13 @@
     <Compile Include="Wiimote\WiimoteButton.cs" />
     <Compile Include="Wiimote\WiimoteCalibration.cs" />
     <Compile Include="WindowPlugin.cs" />
-    <Compile Include="XBox360Plugin.cs" />
-    <Compile Include="Yei3SpacePlugin.cs" />
+    <None Include="XBox360Plugin.cs2" />
+    <None Include="Yei3SpacePlugin.cs2" />
     <Compile Include="Yei3Space\Api.cs" />
     <Compile Include="Yei3Space\Enums.cs" />
     <Compile Include="Yei3Space\TssComPort.cs" />
     <Compile Include="Yei3Space\TssStreamPacket.cs" />
-    <Compile Include="ZeissPlugin.cs" />
+    <None Include="ZeissPlugin.cs2" />
     <Compile Include="Zeiss\Api.cs" />
     <Compile Include="Zeiss\Structs.cs" />
   </ItemGroup>

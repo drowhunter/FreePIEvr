@@ -3,7 +3,7 @@ extern "C"
   #include "../include/ovr_freepie.h"
 }
 
-//#define WITH_GRAPHICS
+#define WITH_GRAPHICS
 
 #ifdef WITH_GRAPHICS
 #define XR_USE_GRAPHICS_API_OPENGL
@@ -137,7 +137,10 @@ int ovr_freepie_init()
 
 	// create instance
 	XrInstanceCreateInfo instanceInfo{ XR_TYPE_INSTANCE_CREATE_INFO };
-	instanceInfo.applicationInfo = { "FreePIE", 1, "", 1, XR_CURRENT_API_VERSION };
+	instanceInfo.applicationInfo = { "FreePIE", 1, "", 0, XR_CURRENT_API_VERSION };
+	instanceInfo.createFlags = 0;
+	instanceInfo.enabledApiLayerCount = 0;
+	instanceInfo.enabledApiLayerNames = extensionNames;
 	instanceInfo.enabledExtensionCount = 1;
 	instanceInfo.enabledExtensionNames = extensionNames;
 	XrResult result = xrCreateInstance(&instanceInfo, &m_instance);

@@ -102,6 +102,7 @@ namespace FreePIE.Core.Plugins
         Mahony
     }
 
+    /*
     [GlobalType(Type = typeof(WiimoteGlobal), IsIndexed = true)]
     public class WiimotePlugin : Plugin
     {
@@ -385,4 +386,5 @@ namespace FreePIE.Core.Plugins
             private set;
         }
     }
+    */
 }

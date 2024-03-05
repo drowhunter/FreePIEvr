@@ -66,15 +66,15 @@ namespace FreePIE.Core.Plugins {
       {
          [FieldOffset(0)]
          public int type;
-         [FieldOffset(4)]
+         [FieldOffset(8)]
          public MOUSEINPUT mi;
-         [FieldOffset(4)]
+         [FieldOffset(8)]
          public KEYBDINPUT ki;
-         [FieldOffset(4)]
+         [FieldOffset(8)]
          public HARDWAREINPUT hi;
       }
 
-      [DllImport("user32.dll", SetLastError = true)]
+      [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
       public static extern uint SendInput(uint num_inputs, INPUT[] inputs, int size);
    }
 }
