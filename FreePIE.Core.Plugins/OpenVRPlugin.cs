@@ -96,6 +96,11 @@ namespace FreePIE.Core.Plugins
             m_vrAPI.Center();
         }
 
+        public void ConfigureInput(uint inputConfig)
+        {
+            m_vrAPI.ConfigureInput(inputConfig);
+        }
+
         public void TriggerHapticPulse(uint controllerIndex, float duration, float frequency, float amplitude)
         {
             m_vrAPI.TriggerHapticPulse(controllerIndex, duration, frequency, amplitude);
@@ -139,6 +144,11 @@ namespace FreePIE.Core.Plugins
         public void center()
         {
             plugin.Center();
+        }
+
+        public void configureInput(uint inputConfig)
+        {
+            plugin.ConfigureInput(inputConfig);
         }
 
         public void triggerHapticPulse(uint controllerIndex, float duration, float frequency, float amplitude)

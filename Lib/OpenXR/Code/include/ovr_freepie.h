@@ -42,29 +42,15 @@ typedef struct ovr_freepie_data {
 
 } ovr_freepie_data;
 
-typedef struct ovr_freepie_haptics
-{
-	float LeftDuration;
-	float LeftFrequency;
-	float LeftAmplitude;
-
-	float RightDuration;
-	float RightFrequency;
-	float RightAmplitude;
-} ovr_freepie_haptics;
-
 int ovr_freepie_init();
 int ovr_freepie_read(ovr_freepie_data *output);
 int ovr_freepie_destroy();
 int ovr_freepie_reset_orientation();
+int ovr_freepie_configure_input(unsigned int inputConfig);
 int ovr_freepie_trigger_haptic_pulse(unsigned int controllerIndex, float duration, float frequency, float amplitude);
 
 namespace openxr_api_layer
 {
-	XrResult xrCreateApiLayerInstance(const XrInstanceCreateInfo* instanceCreateInfo,
-		const struct XrApiLayerCreateInfo* apiLayerInfo,
-		XrInstance* instance);
-	XrResult xrGetInstanceProcAddr(XrInstance instance, const char* name, PFN_xrVoidFunction* function);
 	XrResult xrNegotiateLoaderApiLayerInterface(const XrNegotiateLoaderInfo* loaderInfo, const char* layerName, XrNegotiateApiLayerRequest* apiLayerRequest);
 }
 #endif

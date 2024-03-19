@@ -10,17 +10,35 @@ extern "C"
 #include <string.h>
 #include <vector>
 
+
+typedef struct ovr_freepie_haptics
+{
+	float Duration;
+	float Frequency;
+	float Amplitude;
+
+} ovr_freepie_haptics;
+
+typedef struct ovr_freepie_input
+{
+	ovr_freepie_haptics LeftHaptics;
+	ovr_freepie_haptics RightHaptics;
+
+	bool AllowAllInputs;
+} ovr_freepie_input;
+
+
 // memory mapped file
 HANDLE hOutputFileMapping;
-HANDLE hHapticsFileMapping;
+HANDLE hInputFileMapping;
 LPVOID lpOutputMappedAddress; 
-LPVOID lpHapticsMappedAddress;
+LPVOID lpInputMappedAddress;
 
 // input/output
 ovr_freepie_data* m_output;
-ovr_freepie_haptics* m_haptics;
+ovr_freepie_input* m_input;
 
-int ovr_freepie_init()
+int InitIPC()
 {
 	// Create or open the memory-mapped file for output
 	hOutputFileMapping = CreateFileMapping(
@@ -34,14 +52,14 @@ int ovr_freepie_init()
 		return XR_ERROR_HANDLE_INVALID;
 
 	// Create or open the memory-mapped file for haptics
-	hHapticsFileMapping = CreateFileMapping(
+	hInputFileMapping = CreateFileMapping(
 		INVALID_HANDLE_VALUE,           // Use paging file
 		NULL,                          // Default security
 		PAGE_READWRITE,                // Read/write access
 		0,                             // Maximum object size (high-order DWORD)
 		sizeof(m_output),  // Maximum object size (low-order DWORD)
 		"FreePIEOpenXRHaptics");        // Name of mapping object
-	if (hHapticsFileMapping == NULL)
+	if (hInputFileMapping == NULL)
 		return XR_ERROR_HANDLE_INVALID;
 
 	// Map the output file to memory
@@ -57,19 +75,26 @@ int ovr_freepie_init()
 	}
 
 	// Map the haptics file to memory
-	lpHapticsMappedAddress = MapViewOfFile(
-		hHapticsFileMapping,                  // Handle to file mapping object
+	lpInputMappedAddress = MapViewOfFile(
+		hInputFileMapping,                  // Handle to file mapping object
 		FILE_MAP_ALL_ACCESS,           // Read/write access
 		0,                             // High-order DWORD of offset
 		0,                             // Low-order DWORD of offset
 		0);                            // Number of bytes to map; 0 means map the whole file
-	if (lpHapticsMappedAddress == NULL) {
-		CloseHandle(hHapticsFileMapping);
+	if (lpInputMappedAddress == NULL) {
+		CloseHandle(hInputFileMapping);
 		return XR_ERROR_HANDLE_INVALID;
 	}
 
 	m_output = reinterpret_cast<ovr_freepie_data*>(lpOutputMappedAddress);
-	m_haptics = reinterpret_cast<ovr_freepie_haptics*>(lpHapticsMappedAddress);
+	m_input = reinterpret_cast<ovr_freepie_input*>(lpInputMappedAddress);
+}
+
+int ovr_freepie_init()
+{
+	int result = InitIPC();
+	if (result != 0)
+		return result;
 
 	return 0;
 }
@@ -87,15 +112,15 @@ int ovr_freepie_destroy()
 		hOutputFileMapping = NULL;
 	}
 
-	if (lpHapticsMappedAddress != NULL)
+	if (lpInputMappedAddress != NULL)
 	{
-		UnmapViewOfFile(lpHapticsMappedAddress);
-		lpHapticsMappedAddress = NULL;
+		UnmapViewOfFile(lpInputMappedAddress);
+		lpInputMappedAddress = NULL;
 	}
-	if (hHapticsFileMapping != NULL)
+	if (hInputFileMapping != NULL)
 	{
-		CloseHandle(hHapticsFileMapping);
-		hHapticsFileMapping = NULL;
+		CloseHandle(hInputFileMapping);
+		hInputFileMapping = NULL;
 	}
 
 	return 0;
@@ -113,19 +138,29 @@ int ovr_freepie_read(ovr_freepie_data *output)
 	return 0;
 }
 
+int ovr_freepie_configure_input(unsigned int inputConfig)
+{
+	if (inputConfig)
+	{
+		m_input->AllowAllInputs = true;
+	}
+
+	return 0;
+}
+
 int ovr_freepie_trigger_haptic_pulse(unsigned int controllerIndex, float duration, float frequency, float amplitude)
 {
 	if (controllerIndex == 0)
 	{
-		m_haptics->LeftAmplitude = amplitude;
-		m_haptics->LeftDuration = duration;
-		m_haptics->LeftFrequency = frequency;
+		m_input->LeftHaptics.Amplitude = amplitude;
+		m_input->LeftHaptics.Duration = duration;
+		m_input->LeftHaptics.Frequency = frequency;
 	}
 	else
 	{
-		m_haptics->RightAmplitude = amplitude;
-		m_haptics->RightDuration = duration;
-		m_haptics->RightFrequency = frequency;
+		m_input->RightHaptics.Amplitude = amplitude;
+		m_input->RightHaptics.Duration = duration;
+		m_input->RightHaptics.Frequency = frequency;
 	}
 	return 0;
 }
@@ -392,6 +427,29 @@ namespace openxr_api_layer
 		return result;
 	}
 
+	bool AllowSuggestion(XrPath path)
+	{
+		if (m_input->AllowAllInputs)
+			return true;
+
+		std::string pathString = FromXrPath(path);
+		if (pathString == "/user/hand/left/input/aim/pose")
+			return true;
+		if (pathString == "/user/hand/left/input/grip/pose")
+			return true;
+		if (pathString == "/user/hand/left/output/haptic")
+			return true;
+
+		if (pathString == "/user/hand/right/input/aim/pose")
+			return true;
+		if (pathString == "/user/hand/right/input/grip/pose")
+			return true;
+		if (pathString == "/user/hand/right/output/haptic")
+			return true;
+
+		return false;
+	}
+
 	XrResult _xrSuggestInteractionProfileBindings(XrInstance instance, const XrInteractionProfileSuggestedBinding* suggestedBindings)
 	{
 		XrResult result = _nextXrSuggestInteractionProfileBindings(instance, suggestedBindings);
@@ -405,35 +463,50 @@ namespace openxr_api_layer
 		{
 			for (int i = 0; i < suggestedBindings->countSuggestedBindings; ++i)
 			{
-				m_bindings_simple_controller.push_back(suggestedBindings->suggestedBindings[i]);
+				if (AllowSuggestion(suggestedBindings->suggestedBindings[i].binding))
+				{
+					m_bindings_simple_controller.push_back(suggestedBindings->suggestedBindings[i]);
+				}
 			}
 		}
 		else if (profile == "/interaction_profiles/htc/vive_controller")
 		{
 			for (int i = 0; i < suggestedBindings->countSuggestedBindings; ++i)
 			{
-				m_bindings_vive_controller.push_back(suggestedBindings->suggestedBindings[i]);
+				if (AllowSuggestion(suggestedBindings->suggestedBindings[i].binding))
+				{
+					m_bindings_vive_controller.push_back(suggestedBindings->suggestedBindings[i]);					
+				}
 			}
 		}
 		else if (profile == "/interaction_profiles/microsoft/motion_controller")
 		{
 			for (int i = 0; i < suggestedBindings->countSuggestedBindings; ++i)
 			{
-				m_bindings_motion_controller.push_back(suggestedBindings->suggestedBindings[i]);
+				if (AllowSuggestion(suggestedBindings->suggestedBindings[i].binding))
+				{
+					m_bindings_motion_controller.push_back(suggestedBindings->suggestedBindings[i]);
+				}
 			}
 		}
 		else if (profile == "/interaction_profiles/oculus/touch_controller")
 		{
 			for (int i = 0; i < suggestedBindings->countSuggestedBindings; ++i)
 			{
-				m_bindings_touch_controller.push_back(suggestedBindings->suggestedBindings[i]);
+				if (AllowSuggestion(suggestedBindings->suggestedBindings[i].binding))
+				{
+					m_bindings_touch_controller.push_back(suggestedBindings->suggestedBindings[i]);
+				}
 			}
 		}
 		else if (profile == "/interaction_profiles/valve/index_controller")
 		{
 			for (int i = 0; i < suggestedBindings->countSuggestedBindings; ++i)
 			{
-				m_bindings_index_controller.push_back(suggestedBindings->suggestedBindings[i]);
+				if (AllowSuggestion(suggestedBindings->suggestedBindings[i].binding))
+				{
+					m_bindings_index_controller.push_back(suggestedBindings->suggestedBindings[i]);
+				}
 			}
 		}
 
@@ -756,7 +829,7 @@ namespace openxr_api_layer
 
 		// vibrations
 		XrHapticVibration vibration{ XR_TYPE_HAPTIC_VIBRATION };
-		vibration.amplitude = m_haptics->LeftAmplitude;
+		vibration.amplitude = m_input->LeftHaptics.Amplitude;
 		vibration.duration = XR_MIN_HAPTIC_DURATION; // std::max(XR_MIN_HAPTIC_DURATION, (int)(1000 * 1000 * duration));
 		vibration.frequency = XR_FREQUENCY_UNSPECIFIED;
 
@@ -767,7 +840,7 @@ namespace openxr_api_layer
 		if (XR_FAILED(result))
 			return result;
 
-		vibration.amplitude = m_haptics->RightAmplitude;
+		vibration.amplitude = m_input->RightHaptics.Amplitude;
 		hapticActionInfo.subactionPath = m_handPaths[1];
 		result = _nextXrApplyHapticFeedback(m_session, &hapticActionInfo, (XrHapticBaseHeader*)&vibration);
 		if (XR_FAILED(result))

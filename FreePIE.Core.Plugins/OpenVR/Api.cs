@@ -11,6 +11,7 @@ namespace FreePIE.Core.Plugins.OculusVR
         int Read(out OpenVrData output);
         bool Dispose();
         bool Center();
+        void ConfigureInput(uint inputConfig);
         void TriggerHapticPulse(uint controllerIndex, float duration, float frequency, float amplitude);
     }
 
@@ -46,6 +47,8 @@ namespace FreePIE.Core.Plugins.OculusVR
         {
             return ovr_freepie_reset_orientation() == 0;
         }
+
+        public void ConfigureInput(uint inputConfig) { }
 
         public void TriggerHapticPulse(uint controllerIndex, float duration, float frequency, float amplitude)
         {
@@ -86,6 +89,8 @@ namespace FreePIE.Core.Plugins.OculusVR
             return ovr_freepie_reset_orientation() == 0;
         }
 
+        public void ConfigureInput(uint inputConfig) { }
+
         public void TriggerHapticPulse(uint controllerIndex, float duration, float frequency, float amplitude)
         {
             ovr_freepie_trigger_haptic_pulse(controllerIndex, duration, frequency, amplitude);
@@ -102,6 +107,8 @@ namespace FreePIE.Core.Plugins.OculusVR
         private extern static int ovr_freepie_destroy();
         [DllImport("OpenXRFreePIE.dll", CallingConvention = CallingConvention.Cdecl)]
         private extern static int ovr_freepie_reset_orientation();
+        [DllImport("OpenXRFreePIE.dll", CallingConvention = CallingConvention.Cdecl)]
+        private extern static int ovr_freepie_configure_input(uint inputConfig);
         [DllImport("OpenXRFreePIE.dll", CallingConvention = CallingConvention.Cdecl)]
         private extern static int ovr_freepie_trigger_haptic_pulse(uint controllerIndex, float duration, float frequency, float amplitude);
 
@@ -158,6 +165,11 @@ namespace FreePIE.Core.Plugins.OculusVR
         public bool Center()
         {
             return ovr_freepie_reset_orientation() == 0;
+        }
+
+        public void ConfigureInput(uint inputConfig)
+        {
+            ovr_freepie_configure_input(inputConfig);
         }
 
         public void TriggerHapticPulse(uint controllerIndex, float duration, float frequency, float amplitude)
