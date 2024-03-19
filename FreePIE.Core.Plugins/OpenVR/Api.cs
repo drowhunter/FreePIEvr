@@ -1,4 +1,7 @@
-﻿using System.Runtime.InteropServices;
+﻿using Microsoft.Win32;
+using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace FreePIE.Core.Plugins.OculusVR
 {
@@ -102,8 +105,26 @@ namespace FreePIE.Core.Plugins.OculusVR
         [DllImport("OpenXRFreePIE.dll", CallingConvention = CallingConvention.Cdecl)]
         private extern static int ovr_freepie_trigger_haptic_pulse(uint controllerIndex, float duration, float frequency, float amplitude);
 
+        private string GetJSonPath()
+        {
+            string pluginDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            if (pluginDir == null)
+                return string.Empty;
+
+            var exeDir = Directory.GetParent(pluginDir);
+            if (exeDir == null)
+                return string.Empty;
+
+            return exeDir.FullName + "\\openxr-api-layer.json";
+        }
+
         public int Init()
         {
+            string jsonPath = GetJSonPath();
+            if (string.IsNullOrEmpty(jsonPath) == false)
+            {
+                Registry.SetValue(@"HKEY_CURRENT_USER\SOFTWARE\Khronos\OpenXR\1\ApiLayers\Implicit", jsonPath, 0);
+            }
             return ovr_freepie_init();
         }
 
@@ -114,6 +135,23 @@ namespace FreePIE.Core.Plugins.OculusVR
 
         public bool Dispose()
         {
+            string jsonPath = GetJSonPath();
+            if (string.IsNullOrEmpty(jsonPath) == false)
+            {
+                try
+                {
+                    RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Khronos\OpenXR\1\ApiLayers\Implicit");
+                    if (key != null)
+                    {
+                        key.DeleteValue(GetJSonPath());
+                    }
+                }
+                catch
+                {
+                    Registry.SetValue(@"HKEY_CURRENT_USER\SOFTWARE\Khronos\OpenXR\1\ApiLayers\Implicit", jsonPath, 1);
+                }
+            }
+
             return ovr_freepie_destroy() == 0;
         }
 

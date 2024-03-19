@@ -148,14 +148,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\ovr_freepie.h" />
-    <ClInclude Include="src\GraphicsAPI.h" />
-    <ClInclude Include="src\GraphicsAPI_D3D11.h" />
-    <ClInclude Include="src\HelperFunctions.h" />
-    <ClInclude Include="src\OpenXRHelper.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\GraphicsAPI.cpp" />
-    <ClCompile Include="src\GraphicsAPI_D3D11.cpp" />
     <ClCompile Include="src\ovr_freepie.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

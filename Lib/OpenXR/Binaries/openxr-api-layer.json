@@ -1,0 +1,15 @@
+{
+  "file_format_version" : "1.0.0",
+  "api_layer": {
+    "name": "OpenXRFreePIE",
+    "library_path": ".\\OpenXRFreePIE.dll",
+    "api_version": "1.0",
+    "implementation_version": "1",
+    "description": "An API layer to provide Input Data to FreePIE",
+    "functions": {
+      "xrNegotiateLoaderApiLayerInterface": "xrNegotiateLoaderApiLayerInterface"
+    },
+    "enable_environment": "ENABLE_OpenXRFreePIE",
+    "disable_environment": "DISABLE_OpenXRFreePIE"
+  }
+}
