@@ -123,7 +123,7 @@
     <Compile Include="Strategies\GetPressedStrategy.cs" />
     <Compile Include="Strategies\SetPressedStrategy.cs" />
     <None Include="TobiiEyeXPlugin.cs2" />
-    <None Include="TrackIRPlugin.cs2" />
+    <Compile Include="TrackIRPlugin.cs" />
     <Compile Include="TrackIR\DllRegistrar.cs" />
     <Compile Include="TrackIR\HeadPoseData.cs" />
     <Compile Include="TrackIR\NativeDll.cs" />
