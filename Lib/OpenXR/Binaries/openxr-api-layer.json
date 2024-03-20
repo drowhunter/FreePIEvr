@@ -9,7 +9,6 @@
     "functions": {
       "xrNegotiateLoaderApiLayerInterface": "xrNegotiateLoaderApiLayerInterface"
     },
-    "enable_environment": "ENABLE_OpenXRFreePIE",
     "disable_environment": "DISABLE_OpenXRFreePIE"
   }
 }

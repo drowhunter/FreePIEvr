@@ -49,7 +49,7 @@ int InitIPC()
 		sizeof(m_output),  // Maximum object size (low-order DWORD)
 		"FreePIEOpenXROutput");        // Name of mapping object
 	if (hOutputFileMapping == NULL)
-		return XR_ERROR_HANDLE_INVALID;
+		return 1;
 
 	// Create or open the memory-mapped file for haptics
 	hInputFileMapping = CreateFileMapping(
@@ -60,7 +60,7 @@ int InitIPC()
 		sizeof(m_output),  // Maximum object size (low-order DWORD)
 		"FreePIEOpenXRHaptics");        // Name of mapping object
 	if (hInputFileMapping == NULL)
-		return XR_ERROR_HANDLE_INVALID;
+		return 2;
 
 	// Map the output file to memory
 	lpOutputMappedAddress = MapViewOfFile(
@@ -71,7 +71,7 @@ int InitIPC()
 		0);                            // Number of bytes to map; 0 means map the whole file
 	if (lpOutputMappedAddress == NULL) {
 		CloseHandle(hOutputFileMapping);
-		return XR_ERROR_HANDLE_INVALID;
+		return 3;
 	}
 
 	// Map the haptics file to memory
@@ -83,11 +83,13 @@ int InitIPC()
 		0);                            // Number of bytes to map; 0 means map the whole file
 	if (lpInputMappedAddress == NULL) {
 		CloseHandle(hInputFileMapping);
-		return XR_ERROR_HANDLE_INVALID;
+		return 4;
 	}
 
 	m_output = reinterpret_cast<ovr_freepie_data*>(lpOutputMappedAddress);
 	m_input = reinterpret_cast<ovr_freepie_input*>(lpInputMappedAddress);
+	
+	return 0;
 }
 
 int ovr_freepie_init()
@@ -95,6 +97,9 @@ int ovr_freepie_init()
 	int result = InitIPC();
 	if (result != 0)
 		return result;
+	
+	ovr_freepie_configure_input(0);
+	m_output->HmdMounted = false;
 
 	return 0;
 }
@@ -196,6 +201,7 @@ namespace openxr_api_layer
 	XrSystemId m_system;
 	XrSession m_session;
 	XrTime m_predictedTime;
+	XrDuration m_predictedDuration;
 
 	// actions
 	XrActionSet m_actionSet;
@@ -665,6 +671,7 @@ namespace openxr_api_layer
 			return result;
 
 		m_predictedTime = frameState->predictedDisplayTime;
+		m_predictedDuration = frameState->predictedDisplayPeriod;
 		return result;
 	}
 
@@ -830,7 +837,7 @@ namespace openxr_api_layer
 		// vibrations
 		XrHapticVibration vibration{ XR_TYPE_HAPTIC_VIBRATION };
 		vibration.amplitude = m_input->LeftHaptics.Amplitude;
-		vibration.duration = XR_MIN_HAPTIC_DURATION; // std::max(XR_MIN_HAPTIC_DURATION, (int)(1000 * 1000 * duration));
+		vibration.duration = m_predictedDuration; // std::max(XR_MIN_HAPTIC_DURATION, (int)(1000 * 1000 * duration));
 		vibration.frequency = XR_FREQUENCY_UNSPECIFIED;
 
 		XrHapticActionInfo hapticActionInfo{ XR_TYPE_HAPTIC_ACTION_INFO };
