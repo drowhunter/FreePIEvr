@@ -4,8 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using FreePIE.Core.Contracts;
 using FreePIE.Core.Plugins.Strategies;
-using SlimDX.DirectInput;
-using SlimDX.RawInput;
+using SharpDX.DirectInput;
 
 namespace FreePIE.Core.Plugins
 {
@@ -41,7 +40,7 @@ namespace FreePIE.Core.Plugins
             if (mouseDevice == null)
                 throw new Exception("Failed to create mouse device");
 
-            mouseDevice.SetCooperativeLevel(handle, CooperativeLevel.Background | CooperativeLevel.Nonexclusive);
+            mouseDevice.SetCooperativeLevel(handle, CooperativeLevel.Background | CooperativeLevel.NonExclusive);
             mouseDevice.Properties.AxisMode = DeviceAxisMode.Relative;   // Get delta values
             mouseDevice.Acquire();
 
@@ -149,7 +148,7 @@ namespace FreePIE.Core.Plugins
 
         public bool IsButtonDown(int index)
         {
-            return CurrentMouseState.IsPressed(index);
+            return CurrentMouseState.Buttons[index];
         }
 
         public bool IsButtonPressed(int button)

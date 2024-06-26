@@ -4,11 +4,10 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using FreePIE.Core.Contracts;
 using FreePIE.Core.Plugins.Strategies;
-using SlimDX.DirectInput;
+using SharpDX.DirectInput;
 
 namespace FreePIE.Core.Plugins
 {
-
     // SlimDX key-codes
     [GlobalEnum]
     public enum Key
@@ -342,7 +341,7 @@ namespace FreePIE.Core.Plugins
             if (KeyboardDevice == null)
                 throw new Exception("Failed to create keyboard device");
 
-            KeyboardDevice.SetCooperativeLevel(handle, CooperativeLevel.Background | CooperativeLevel.Nonexclusive);
+            KeyboardDevice.SetCooperativeLevel(handle, CooperativeLevel.Background | CooperativeLevel.NonExclusive);
             KeyboardDevice.Acquire();
 
             KeyboardDevice.GetCurrentState(ref KeyState);
@@ -396,7 +395,7 @@ namespace FreePIE.Core.Plugins
         public bool IsKeyDown(int keycode)
         {
             // Returns true if the key is currently being pressed
-            var key = (SlimDX.DirectInput.Key) keycode;
+            var key = (SharpDX.DirectInput.Key) keycode;
             bool down = KeyState.IsPressed(key) || MyKeyDown[keycode];
             return down;
         }
@@ -404,8 +403,8 @@ namespace FreePIE.Core.Plugins
         public bool IsKeyUp(int keycode)
         {
             // Returns true if the key is currently being pressed
-            var key = (SlimDX.DirectInput.Key) keycode;
-            bool up = KeyState.IsReleased(key) && !MyKeyDown[keycode];
+            var key = (SharpDX.DirectInput.Key) keycode;
+            bool up = KeyState.IsPressed(key) == false && !MyKeyDown[keycode];
             return up;
         }
 
