@@ -1,8 +1,7 @@
-using System;
 using System.Collections.Generic;
 using FreePIE.Core.Contracts;
 using FreePIE.Core.Plugins.Globals;
-using SlimDX.XInput;
+using SharpDX.XInput;
 
 namespace FreePIE.Core.Plugins {
 
