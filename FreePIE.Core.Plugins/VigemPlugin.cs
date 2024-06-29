@@ -163,6 +163,13 @@ namespace FreePIE.Core.Plugins
         Right
     }
 
+    [GlobalEnum]
+    public enum VigemAxis
+    {
+        XAxis,
+        YAxis
+    }
+
     [Global(Name = "vigem")]
     public class VigemGlobal : UpdateblePluginGlobal<VigemPlugin>
     {
@@ -349,6 +356,70 @@ namespace FreePIE.Core.Plugins
             }
         }
 
+        public void SetDPad(VigemController controller, VigemAxis axis, float value, float threshold)
+        {
+            bool negative = value < -threshold;
+            bool positive = value > threshold;
+
+            switch (controller)
+            {
+                case VigemController.DualShockController:
+                    {
+                        if (plugin.DualShockController == null)
+                            throw new Exception("Create controller first: vigem.CreateController(VigemController.DualShockController)");
+
+                        if (axis == VigemAxis.XAxis)
+                        {
+                            if (negative)
+                            {
+                                plugin.DualShockController.SetDPadDirection(DualShock4DPadDirection.West);
+                            }
+                            else if (positive)
+                            {
+                                plugin.DualShockController.SetDPadDirection(DualShock4DPadDirection.East);
+                            }
+                            else
+                            {
+                                plugin.DualShockController.SetDPadDirection(DualShock4DPadDirection.None);
+                            }
+                        }
+                        else
+                        {
+                            if (negative)
+                            {
+                                plugin.DualShockController.SetDPadDirection(DualShock4DPadDirection.South);
+                            }
+                            else if (positive)
+                            {
+                                plugin.DualShockController.SetDPadDirection(DualShock4DPadDirection.North);
+                            }
+                            else
+                            {
+                                plugin.DualShockController.SetDPadDirection(DualShock4DPadDirection.None);
+                            }
+                        }
+                        break;
+                    }
+                case VigemController.XBoxController:
+                    {
+                        if (plugin.XBoxController == null)
+                            throw new Exception("Create controller first: vigem.CreateController(VigemController.XBoxController)");
+
+                        if (axis == VigemAxis.XAxis)
+                        {
+                            plugin.XBoxController.SetButtonState(Xbox360Button.Left, negative);
+                            plugin.XBoxController.SetButtonState(Xbox360Button.Right, positive);
+                        }
+                        else
+                        {
+                            plugin.XBoxController.SetButtonState(Xbox360Button.Up, positive);
+                            plugin.XBoxController.SetButtonState(Xbox360Button.Down, negative);
+                        }
+                        break;
+                    }
+            }
+        }
+
         public void SetButtonState(VigemController controller, VigemButton button, bool pressed)
         {
             switch (controller)
@@ -496,7 +567,7 @@ namespace FreePIE.Core.Plugins
         }
 
         public void SetStick(VigemController controller, VigemSide side, float x, float y)
-        {           
+        {
             switch (controller)
             {
                 case VigemController.DualShockController:
@@ -533,6 +604,72 @@ namespace FreePIE.Core.Plugins
                         case VigemSide.Right:
                             plugin.XBoxController.SetAxisValue(Xbox360Axis.RightThumbX, shortX);
                             plugin.XBoxController.SetAxisValue(Xbox360Axis.RightThumbY, shortY);
+                            break;
+                    }
+                    break;
+            }
+        }
+
+        public void SetStick(VigemController controller, VigemSide side, VigemAxis axis, float value)
+        {
+            switch (controller)
+            {
+                case VigemController.DualShockController:
+                    if (plugin.DualShockController == null)
+                        throw new Exception("Create controller first: vigem.CreateController(VigemController.DualShockController)");
+
+                    byte byteValue = (byte)Math.Max(byte.MinValue, Math.Min(byte.MaxValue, byte.MaxValue * (0.5f + 0.5 * value)));
+
+                    switch (side)
+                    {
+                        case VigemSide.Left:
+                            if (axis == VigemAxis.XAxis)
+                            {
+                                plugin.DualShockController.SetAxisValue(DualShock4Axis.LeftThumbX, byteValue);
+                            }
+                            else
+                            {
+                                plugin.DualShockController.SetAxisValue(DualShock4Axis.LeftThumbY, byteValue);
+                            }
+                            break;
+                        case VigemSide.Right:
+                            if (axis == VigemAxis.XAxis)
+                            {
+                                plugin.DualShockController.SetAxisValue(DualShock4Axis.RightThumbX, byteValue);
+                            }
+                            else
+                            {
+                                plugin.DualShockController.SetAxisValue(DualShock4Axis.RightThumbY, byteValue);
+                            }
+                            break;
+                    }
+                    break;
+                case VigemController.XBoxController:
+                    if (plugin.XBoxController == null)
+                        throw new Exception("Create controller first: vigem.CreateController(VigemController.XBoxController)");
+
+                    short shortValue = (short)Math.Max(short.MinValue, Math.Min(short.MaxValue, short.MaxValue * value));
+                    switch (side)
+                    {
+                        case VigemSide.Left:
+                            if (axis == VigemAxis.XAxis)
+                            {
+                                plugin.XBoxController.SetAxisValue(Xbox360Axis.LeftThumbX, shortValue);
+                            }
+                            else
+                            {
+                                plugin.XBoxController.SetAxisValue(Xbox360Axis.LeftThumbY, shortValue);
+                            }
+                            break;
+                        case VigemSide.Right:
+                            if (axis == VigemAxis.XAxis)
+                            {
+                                plugin.XBoxController.SetAxisValue(Xbox360Axis.RightThumbX, shortValue);
+                            }
+                            else
+                            {
+                                plugin.XBoxController.SetAxisValue(Xbox360Axis.RightThumbY, shortValue);
+                            }
                             break;
                     }
                     break;
