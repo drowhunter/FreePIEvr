@@ -8,6 +8,8 @@ namespace FreePIE.Core.ScriptEngine.Globals.ScriptHelpers
     [Global(Name = "diagnostics")]
     public class DiagnosticHelper : IScriptHelper
     {
+        public static string Version = "unknown";
+
         private readonly IEventAggregator eventAggregator;
 
         public DiagnosticHelper(IEventAggregator eventAggregator)
@@ -47,6 +49,9 @@ namespace FreePIE.Core.ScriptEngine.Globals.ScriptHelpers
            
         }
 
-        
+        public string version()
+        {
+            return Version;
+        }
     }
 }

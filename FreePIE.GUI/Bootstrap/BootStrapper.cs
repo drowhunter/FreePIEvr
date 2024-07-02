@@ -21,6 +21,12 @@ namespace FreePIE.GUI.Bootstrap
 
         public Bootstrapper()
         {
+            Core.ScriptEngine.Globals.ScriptHelpers.DiagnosticHelper.Version = System.Reflection.Assembly
+                .GetExecutingAssembly()
+                .GetName()
+                .Version
+                .ToString();
+
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
             Initialize();
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
