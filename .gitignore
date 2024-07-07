@@ -95,3 +95,4 @@ InstallerTemp
 /Lib/OpenXR/Code/binaries/x64/Release
 /Lib/OpenXR/Code/LibOVR/Win32
 /Lib/OpenXR/Code/LibOVR/Win64
+.vs
