@@ -9,6 +9,7 @@ extern "C"
 #include <Windows.h>
 #include <string.h>
 #include <vector>
+#include <limits.h>
 
 
 typedef struct ovr_freepie_haptics
@@ -24,7 +25,7 @@ typedef struct ovr_freepie_input
 	ovr_freepie_haptics LeftHaptics;
 	ovr_freepie_haptics RightHaptics;
 
-	bool AllowAllInputs;
+	unsigned int BlockedInputs;
 } ovr_freepie_input;
 
 
@@ -147,7 +148,7 @@ int ovr_freepie_configure_input(unsigned int inputConfig)
 {
 	if (inputConfig)
 	{
-		m_input->AllowAllInputs = true;
+		m_input->BlockedInputs = inputConfig;
 	}
 
 	return 0;
@@ -433,11 +434,14 @@ namespace openxr_api_layer
 		return result;
 	}
 
+	bool IsInputBlocked(int bit)
+	{
+		return m_input->BlockedInputs & (1 << bit);
+	}
+
 	bool AllowSuggestion(XrPath path)
 	{
-		if (m_input->AllowAllInputs)
-			return true;
-
+		// always allow poses and haptics for left controller
 		std::string pathString = FromXrPath(path);
 		if (pathString == "/user/hand/left/input/aim/pose")
 			return true;
@@ -446,6 +450,7 @@ namespace openxr_api_layer
 		if (pathString == "/user/hand/left/output/haptic")
 			return true;
 
+		// always allow poses and haptics for right controller
 		if (pathString == "/user/hand/right/input/aim/pose")
 			return true;
 		if (pathString == "/user/hand/right/input/grip/pose")
@@ -453,7 +458,144 @@ namespace openxr_api_layer
 		if (pathString == "/user/hand/right/output/haptic")
 			return true;
 
-		return false;
+		// if all bits are set, no further checks required
+		if (m_input->BlockedInputs == UINT_MAX)
+			return false;
+
+		// left grip
+		if (IsInputBlocked(0))
+		{
+			if (pathString == "/user/hand/left/input/select/click")
+				return false;
+			if (pathString == "/user/hand/left/input/squeeze/click")
+				return false;
+			if (pathString == "/user/hand/left/input/squeeze/value")
+				return false;
+		}
+		// left trigger
+		if (IsInputBlocked(1))
+		{
+			if (pathString == "/user/hand/left/input/trigger/value")
+				return false;
+		}
+		// right grip
+		if (IsInputBlocked(2))
+		{
+			if (pathString == "/user/hand/right/input/select/click")
+				return false;
+			if (pathString == "/user/hand/right/input/squeeze/click")
+				return false;
+			if (pathString == "/user/hand/right/input/squeeze/value")
+				return false;
+		}
+		// right trigger
+		if (IsInputBlocked(3))
+		{
+			if (pathString == "/user/hand/right/input/trigger/value")
+				return false;
+		}
+
+		// right a
+		if (IsInputBlocked(4))
+		{
+			if (pathString == "/user/hand/right/input/a/click")
+				return false;
+			if (pathString == "/user/hand/right/input/a/touch")
+				return false;
+		}
+		// right b
+		if (IsInputBlocked(5))
+		{
+			if (pathString == "/user/hand/right/input/b/click")
+				return false;
+			if (pathString == "/user/hand/right/input/b/touch")
+				return false;
+		}
+
+		// left x (a)
+		if (IsInputBlocked(6))
+		{
+			if (pathString == "/user/hand/left/input/x/click")
+				return false;
+			if (pathString == "/user/hand/left/input/x/touch")
+				return false;
+			if (pathString == "/user/hand/left/input/a/click")
+				return false;
+			if (pathString == "/user/hand/left/input/a/touch")
+				return false;
+		}
+		// left y (b)
+		if (IsInputBlocked(7))
+		{
+			if (pathString == "/user/hand/left/input/y/click")
+				return false;
+			if (pathString == "/user/hand/left/input/y/touch")
+				return false;
+			if (pathString == "/user/hand/left/input/b/click")
+				return false;
+			if (pathString == "/user/hand/left/input/b/touch")
+				return false;
+		}
+
+		// left stick x
+		if (IsInputBlocked(8))
+		{
+			if (pathString == "/user/hand/left/input/trackpad/x")
+				return false;
+			if (pathString == "/user/hand/left/input/thumbstick/x")
+				return false;
+		}
+		// left stick y
+		if (IsInputBlocked(9))
+		{
+			if (pathString == "/user/hand/left/input/trackpad/y")
+				return false;
+			if (pathString == "/user/hand/left/input/thumbstick/y")
+				return false;
+		}
+		// left stick click
+		if (IsInputBlocked(10))
+		{
+			if (pathString == "/user/hand/left/input/trackpad/click")
+				return false;
+			if (pathString == "/user/hand/left/input/trackpad/touch")
+				return false;
+			if (pathString == "/user/hand/left/input/thumbstick/click")
+				return false;
+			if (pathString == "/user/hand/left/input/thumbstick/touch")
+				return false;
+		}
+
+		// right stick x
+		if (IsInputBlocked(11))
+		{
+			if (pathString == "/user/hand/right/input/trackpad/x")
+				return false;
+			if (pathString == "/user/hand/right/input/thumbstick/x")
+				return false;
+		}
+		// right stick y
+		if (IsInputBlocked(12))
+		{
+			if (pathString == "/user/hand/right/input/trackpad/y")
+				return false;
+			if (pathString == "/user/hand/right/input/thumbstick/y")
+				return false;
+		}
+		// right stick click
+		if (IsInputBlocked(13))
+		{
+			if (pathString == "/user/hand/right/input/trackpad/click")
+				return false;
+			if (pathString == "/user/hand/right/input/trackpad/touch")
+				return false;
+			if (pathString == "/user/hand/right/input/thumbstick/click")
+				return false;
+			if (pathString == "/user/hand/right/input/thumbstick/touch")
+				return false;
+		}
+
+		return true;
 	}
 
 	XrResult _xrSuggestInteractionProfileBindings(XrInstance instance, const XrInteractionProfileSuggestedBinding* suggestedBindings)
@@ -467,7 +609,7 @@ namespace openxr_api_layer
 		// join bindings
 		if (profile == "/interaction_profiles/khr/simple_controller")
 		{
-			for (int i = 0; i < suggestedBindings->countSuggestedBindings; ++i)
+			for (unsigned int i = 0; i < suggestedBindings->countSuggestedBindings; ++i)
 			{
 				if (AllowSuggestion(suggestedBindings->suggestedBindings[i].binding))
 				{
@@ -477,7 +619,7 @@ namespace openxr_api_layer
 		}
 		else if (profile == "/interaction_profiles/htc/vive_controller")
 		{
-			for (int i = 0; i < suggestedBindings->countSuggestedBindings; ++i)
+			for (unsigned int i = 0; i < suggestedBindings->countSuggestedBindings; ++i)
 			{
 				if (AllowSuggestion(suggestedBindings->suggestedBindings[i].binding))
 				{
@@ -487,7 +629,7 @@ namespace openxr_api_layer
 		}
 		else if (profile == "/interaction_profiles/microsoft/motion_controller")
 		{
-			for (int i = 0; i < suggestedBindings->countSuggestedBindings; ++i)
+			for (unsigned int i = 0; i < suggestedBindings->countSuggestedBindings; ++i)
 			{
 				if (AllowSuggestion(suggestedBindings->suggestedBindings[i].binding))
 				{
@@ -497,7 +639,7 @@ namespace openxr_api_layer
 		}
 		else if (profile == "/interaction_profiles/oculus/touch_controller")
 		{
-			for (int i = 0; i < suggestedBindings->countSuggestedBindings; ++i)
+			for (unsigned int i = 0; i < suggestedBindings->countSuggestedBindings; ++i)
 			{
 				if (AllowSuggestion(suggestedBindings->suggestedBindings[i].binding))
 				{
@@ -507,7 +649,7 @@ namespace openxr_api_layer
 		}
 		else if (profile == "/interaction_profiles/valve/index_controller")
 		{
-			for (int i = 0; i < suggestedBindings->countSuggestedBindings; ++i)
+			for (unsigned int i = 0; i < suggestedBindings->countSuggestedBindings; ++i)
 			{
 				if (AllowSuggestion(suggestedBindings->suggestedBindings[i].binding))
 				{
@@ -651,7 +793,7 @@ namespace openxr_api_layer
 
 		// join action sets
 		std::vector<XrActionSet> actionSets;
-		for (int i = 0; i < attachInfo->countActionSets; ++i)
+		for (unsigned int i = 0; i < attachInfo->countActionSets; ++i)
 		{
 			actionSets.push_back(attachInfo->actionSets[i]);
 		}
