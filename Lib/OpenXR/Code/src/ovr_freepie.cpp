@@ -443,6 +443,9 @@ namespace openxr_api_layer
 	{
 		// always allow poses and haptics for left controller
 		std::string pathString = FromXrPath(path);
+		//std::ofstream file;
+		//file.open("x:/test.txt", std::ios::out | std::ios::app);
+		//file << "suggestion " << pathString << std::endl;
 		if (pathString == "/user/hand/left/input/aim/pose")
 			return true;
 		if (pathString == "/user/hand/left/input/grip/pose")
@@ -462,10 +465,16 @@ namespace openxr_api_layer
 		if (m_input->BlockedInputs == UINT_MAX)
 			return false;
 
+		int i = 0;
+
 		// left grip
-		if (IsInputBlocked(0))
+		if (IsInputBlocked(i++))
 		{
+			if (pathString == "/user/hand/left/input/select")
+				return false;
 			if (pathString == "/user/hand/left/input/select/click")
+				return false;
+			if (pathString == "/user/hand/left/input/squeeze")
 				return false;
 			if (pathString == "/user/hand/left/input/squeeze/click")
 				return false;
@@ -473,15 +482,21 @@ namespace openxr_api_layer
 				return false;
 		}
 		// left trigger
-		if (IsInputBlocked(1))
+		if (IsInputBlocked(i++))
 		{
+			if (pathString == "/user/hand/left/input/trigger")
+				return false;
 			if (pathString == "/user/hand/left/input/trigger/value")
 				return false;
 		}
 		// right grip
-		if (IsInputBlocked(2))
+		if (IsInputBlocked(i++))
 		{
+			if (pathString == "/user/hand/right/input/select")
+				return false;
 			if (pathString == "/user/hand/right/input/select/click")
+				return false;
+			if (pathString == "/user/hand/right/input/squeeze")
 				return false;
 			if (pathString == "/user/hand/right/input/squeeze/click")
 				return false;
@@ -489,23 +504,29 @@ namespace openxr_api_layer
 				return false;
 		}
 		// right trigger
-		if (IsInputBlocked(3))
+		if (IsInputBlocked(i++))
 		{
+			if (pathString == "/user/hand/right/input/trigger")
+				return false;
 			if (pathString == "/user/hand/right/input/trigger/value")
 				return false;
 		}
 
 		// right a
-		if (IsInputBlocked(4))
+		if (IsInputBlocked(i++))
 		{
+			if (pathString == "/user/hand/right/input/a")
+				return false;
 			if (pathString == "/user/hand/right/input/a/click")
 				return false;
 			if (pathString == "/user/hand/right/input/a/touch")
 				return false;
 		}
 		// right b
-		if (IsInputBlocked(5))
+		if (IsInputBlocked(i++))
 		{
+			if (pathString == "/user/hand/right/input/b")
+				return false;
 			if (pathString == "/user/hand/right/input/b/click")
 				return false;
 			if (pathString == "/user/hand/right/input/b/touch")
@@ -513,11 +534,15 @@ namespace openxr_api_layer
 		}
 
 		// left x (a)
-		if (IsInputBlocked(6))
+		if (IsInputBlocked(i++))
 		{
+			if (pathString == "/user/hand/left/input/x")
+				return false;
 			if (pathString == "/user/hand/left/input/x/click")
 				return false;
 			if (pathString == "/user/hand/left/input/x/touch")
+				return false;
+			if (pathString == "/user/hand/left/input/a")
 				return false;
 			if (pathString == "/user/hand/left/input/a/click")
 				return false;
@@ -525,11 +550,15 @@ namespace openxr_api_layer
 				return false;
 		}
 		// left y (b)
-		if (IsInputBlocked(7))
+		if (IsInputBlocked(i++))
 		{
+			if (pathString == "/user/hand/left/input/y")
+				return false;
 			if (pathString == "/user/hand/left/input/y/click")
 				return false;
 			if (pathString == "/user/hand/left/input/y/touch")
+				return false;
+			if (pathString == "/user/hand/left/input/b")
 				return false;
 			if (pathString == "/user/hand/left/input/b/click")
 				return false;
@@ -537,24 +566,24 @@ namespace openxr_api_layer
 				return false;
 		}
 
-		// left stick x
-		if (IsInputBlocked(8))
+		// left stick
+		if (IsInputBlocked(i++))
 		{
+			if (pathString == "/user/hand/left/input/trackpad")
+				return false;
 			if (pathString == "/user/hand/left/input/trackpad/x")
 				return false;
-			if (pathString == "/user/hand/left/input/thumbstick/x")
-				return false;
-		}
-		// left stick y
-		if (IsInputBlocked(9))
-		{
 			if (pathString == "/user/hand/left/input/trackpad/y")
+				return false;
+			if (pathString == "/user/hand/left/input/thumbstick")
+				return false;
+			if (pathString == "/user/hand/left/input/thumbstick/x")
 				return false;
 			if (pathString == "/user/hand/left/input/thumbstick/y")
 				return false;
 		}
 		// left stick click
-		if (IsInputBlocked(10))
+		if (IsInputBlocked(i++))
 		{
 			if (pathString == "/user/hand/left/input/trackpad/click")
 				return false;
@@ -566,24 +595,24 @@ namespace openxr_api_layer
 				return false;
 		}
 
-		// right stick x
-		if (IsInputBlocked(11))
+		// right stick
+		if (IsInputBlocked(i++))
 		{
+			if (pathString == "/user/hand/right/input/trackpad")
+				return false;
 			if (pathString == "/user/hand/right/input/trackpad/x")
 				return false;
-			if (pathString == "/user/hand/right/input/thumbstick/x")
-				return false;
-		}
-		// right stick y
-		if (IsInputBlocked(12))
-		{
 			if (pathString == "/user/hand/right/input/trackpad/y")
+				return false;
+			if (pathString == "/user/hand/right/input/thumbstick")
+				return false;
+			if (pathString == "/user/hand/right/input/thumbstick/x")
 				return false;
 			if (pathString == "/user/hand/right/input/thumbstick/y")
 				return false;
 		}
 		// right stick click
-		if (IsInputBlocked(13))
+		if (IsInputBlocked(i++))
 		{
 			if (pathString == "/user/hand/right/input/trackpad/click")
 				return false;
