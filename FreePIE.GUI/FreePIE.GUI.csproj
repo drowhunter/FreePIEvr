@@ -471,6 +471,7 @@
       copy "$(SolutionDir)\Lib\OculusVR\Binaries\*.dll" "$(TargetDir)"
       copy "$(SolutionDir)\Lib\OpenVR\Binaries\*.dll" "$(TargetDir)"
       copy "$(SolutionDir)\Lib\OpenXR\Binaries\*.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Lib\OpenXR\Binaries\*.json" "$(TargetDir)"
       copy "$(SolutionDir)\Lib\VJoy\*.dll" "$(TargetDir)"
       copy "$(SolutionDir)\Lib\Midi\*.dll" "$(TargetDir)"
       copy "$(SolutionDir)\Lib\Tobii\*.dll" "$(TargetDir)"</PostBuildEvent>

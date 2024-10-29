@@ -128,7 +128,12 @@ namespace FreePIE.Core.Plugins.VR
         public int Init()
         {
             string jsonPath = GetJSonPath();
-            if (string.IsNullOrEmpty(jsonPath) == false)
+
+            if (!File.Exists(jsonPath))
+            {
+                throw new FileNotFoundException(jsonPath);
+            }
+            if (!string.IsNullOrEmpty(jsonPath))
             {
                 Registry.SetValue(@"HKEY_CURRENT_USER\SOFTWARE\Khronos\OpenXR\1\ApiLayers\Implicit", jsonPath, 0);
             }
