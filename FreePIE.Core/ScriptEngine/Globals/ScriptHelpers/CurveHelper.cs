@@ -15,25 +15,13 @@ namespace FreePIE.Core.ScriptEngine.Globals.ScriptHelpers
 
         }
 
-        /// <summary>
-        /// Create a curve from a list of points
-        /// </summary>
-        /// <param name="points">list of points in the format x,y,x,y,x,y,x,y...</param>
-        /// <returns></returns>
-        public CurveGlobalProvider.CurveGlobal create(params double[] points)
-        {
-            
-            var pointz = points.Select((x, i) => new { x, i }).GroupBy(p => p.i / 2).Select(g => new Point(g.First().x, g.Last().x)).ToList();
-            
-            return new CurveGlobalProvider.CurveGlobal(new Curve(Guid.NewGuid().ToString(), pointz) { ValidateCurve = true });
-        }
-
+        
         /// <summary>
         /// Create a curve from a list of points
         /// </summary>
         /// <param name="points">list of points in the format x,y,x,y,x,y,x,y...</param>
         /// <returns>a curve global</returns>
-        public CurveGlobalProvider.CurveGlobal createCurve(double minimum, double maximum, params double[] points)
+        public CurveGlobalProvider.CurveGlobal create(double minimum, double maximum, params double[] points)
         {
 
             var pointz = new List<Point>() { new Point(minimum, minimum) };
