@@ -89,7 +89,7 @@ namespace FreePIE.GUI.Views.Curves
         public IEnumerable<IResult> Script()
         {
             
-            string python = $"{Curve.Name} = curves.createCurve({Curve.Points.First().X}, {Curve.Points.Last().X}";
+            string python = $"{Curve.Name} = curves.create({Curve.Points.First().X}, {Curve.Points.Last().X}";
             foreach (var point in Curve.Points.Skip(1).TakeAllButLast())
             {                
                 python += $", {point.X:0.000}, {point.Y:0.000}";
