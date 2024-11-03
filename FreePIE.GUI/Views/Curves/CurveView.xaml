@@ -15,13 +15,7 @@
 
                 <CheckBox x:Name="ValidateCurve" Margin="5,3,5,0">Validate Curve</CheckBox>
                 <Button x:Name="Reset">Reset</Button>
-                <Button x:Name="Delete" Margin="5,0,0,0" Background="Red">Delete</Button>
-                <Button x:Name="Save" Margin="5,0,0,0" Background="Blue">
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="/Resources/save-16.png"/>
-                        <TextBlock Margin="5,0,0,0">Save</TextBlock>
-                    </StackPanel>
-                </Button>
+                <Button x:Name="Delete" Margin="5,0,0,0" Background="Red">Delete</Button>                
             </StackPanel>            
             <Charts:Chart Background="White" Width="600" Height="400" Margin="0,2,0,0" >
                 <Charts:Chart.Behaviour>
