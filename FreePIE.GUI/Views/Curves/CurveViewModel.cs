@@ -9,6 +9,7 @@ using FreePIE.GUI.Events;
 using FreePIE.GUI.Result;
 using FreePIE.GUI.Shells.Curves;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -86,7 +87,7 @@ namespace FreePIE.GUI.Views.Curves
         /// Generates a python script that creates the curve
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<IResult> Script()
+        public void Script()
         {
             
             string python = $"{Curve.Name} = curves.create({Curve.Points.First().X}, {Curve.Points.Last().X}";
@@ -96,15 +97,15 @@ namespace FreePIE.GUI.Views.Curves
             }
             python += ")";
             
-
-            var message = resultFactory.ShowMessageBox(string.Format("Copy to Clipboard {0}", Curve.Name), python, MessageBoxButton.OK);
-            yield return message;
-
-            if (message.Result == System.Windows.MessageBoxResult.OK)
+            
+            try
             {
-                Clipboard.SetText(python);
+                Clipboard.SetDataObject(python);
             }
+            catch(Exception x)
+            {   
 
+            }
         }
 
         
