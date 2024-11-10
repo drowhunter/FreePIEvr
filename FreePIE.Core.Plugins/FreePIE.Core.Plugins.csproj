@@ -116,6 +116,7 @@
     <Compile Include="Midi\DataGlobal.cs" />
     <Compile Include="MouseKeyIO.cs" />
     <Compile Include="MousePlugin.cs" />
+    <Compile Include="OpenTrackPlugin.cs" />
     <Compile Include="VRPlugin.cs" />
     <Compile Include="VR\Api.cs" />
     <Compile Include="VR\Vr6Dof.cs" />
