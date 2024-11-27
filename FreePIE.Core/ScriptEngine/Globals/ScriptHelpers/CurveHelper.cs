@@ -39,6 +39,15 @@ namespace FreePIE.Core.ScriptEngine.Globals.ScriptHelpers
             return new CurveGlobalProvider.CurveGlobal(new Curve(Guid.NewGuid().ToString(), pointz) { ValidateCurve = true });
         }
 
+        public double arc(double x)
+        {
+            var y = 0.0;
+
+            y = -Math.Sqrt(1 - (x * x));
+
+            return y;
+        }
+
     }
    
 }
