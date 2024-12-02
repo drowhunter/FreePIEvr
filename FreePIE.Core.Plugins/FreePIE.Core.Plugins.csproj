@@ -40,7 +40,7 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CannedBytes">
+    <!--<Reference Include="CannedBytes">
       <HintPath>..\Lib\Midi\CannedBytes.dll</HintPath>
       <Private>False</Private>
     </Reference>
@@ -55,13 +55,13 @@
     <Reference Include="EyeXFramework">
       <HintPath>..\Lib\Tobii\EyeXFramework.dll</HintPath>
       <Private>False</Private>
-    </Reference>
+    </Reference>-->
     <Reference Include="Nefarius.ViGEm.Client, Version=1.21.256.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nefarius.ViGEm.Client.1.21.256\lib\netstandard2.0\Nefarius.ViGEm.Client.dll</HintPath>
     </Reference>
-    <Reference Include="PPJoyWrapper">
+    <!--<Reference Include="PPJoyWrapper">
       <HintPath>..\Lib\PPJoyWrapper\PPJoyWrapper.dll</HintPath>
-    </Reference>
+    </Reference>-->
     <Reference Include="SharpDX, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpDX.4.2.0\lib\net45\SharpDX.dll</HintPath>
     </Reference>
@@ -75,33 +75,25 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Speech" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="Tobii.EyeX.Client.Net20">
+    <!--<Reference Include="Tobii.EyeX.Client.Net20">
       <HintPath>..\Lib\Tobii\Tobii.EyeX.Client.Net20.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="vJoyInterfaceWrap">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\vJoy\vJoyInterfaceWrap.dll</HintPath>
-    </Reference>
+    </Reference>-->
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\VersionInfo.cs">
       <Link>VersionInfo.cs</Link>
     </Compile>
-    <None Include="AhrsImuPlugin.cs2" />
-    <None Include="AndroidPlugin.cs2" />
-    <None Include="ApplePlugin.cs2" />
     <Compile Include="ComDevicePlugin.cs" />
-    <None Include="FreeImuPlugin.cs2" />
     <Compile Include="FreePieIOPlugin.cs" />
-    <None Include="FreeSpacePlugin.cs2" />
-    <None Include="FreeTrackPlugin.cs2" />
     <Compile Include="Globals\GlobalIndexer.cs" />
-    <None Include="HydraPlugin.cs2" />
-    <Compile Include="Hydra\EmulatedData.cs" />
-    <Compile Include="Hydra\HydraSpoof.cs" />
-    <Compile Include="Hydra\Sixense.cs" />
-    <None Include="JoystickPlugin.cs2" />
+    <Compile Include="joystick\JoystickEventArgs.cs" />
+    <Compile Include="joystick\JoystickGlobal.cs" />
+    <Compile Include="joystick\JoystickPlugin.cs" />
     <Compile Include="KeyboardPlugin.cs" />
     <Compile Include="MemoryMapping\ArgumentExtension.cs" />
     <Compile Include="MemoryMapping\DisconnectedFreepieData.cs" />
@@ -111,7 +103,6 @@
     <Compile Include="MemoryMapping\SharedMemoryWorker.cs" />
     <Compile Include="MemoryMapping\TrackIRWorker.cs" />
     <Compile Include="MemoryMapping\WorkerProcess.cs" />
-    <None Include="MidiPlugin.cs2" />
     <Compile Include="Midi\MidiStatus.cs" />
     <Compile Include="Midi\DataGlobal.cs" />
     <Compile Include="MouseKeyIO.cs" />
@@ -121,14 +112,12 @@
     <Compile Include="VR\Api.cs" />
     <Compile Include="VR\Vr6Dof.cs" />
     <Compile Include="Plugin.cs" />
-    <None Include="PPJoyPlugin.cs2" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SensorFusion\MahonyAHRS.cs" />
     <Compile Include="SensorFusion\Quaternion.cs" />
     <Compile Include="SpeechPlugin.cs" />
     <Compile Include="Strategies\GetPressedStrategy.cs" />
     <Compile Include="Strategies\SetPressedStrategy.cs" />
-    <None Include="TobiiEyeXPlugin.cs2" />
     <Compile Include="TrackIRPlugin.cs" />
     <Compile Include="TrackIR\DllRegistrar.cs" />
     <Compile Include="TrackIR\HeadPoseData.cs" />
@@ -137,8 +126,6 @@
     <Compile Include="TrackIR\TrackIRDll.cs" />
     <Compile Include="TrackIR\TrackIRHeadposeData.cs" />
     <Compile Include="VigemPlugin.cs" />
-    <None Include="VJoyPlugin.cs2" />
-    <None Include="VuzixTrackerPlugin.cs2" />
     <Compile Include="WiimotePlugin.cs" />
     <Compile Include="Wiimote\CapabilitiesGlobal.cs" />
     <Compile Include="Wiimote\AccelerationGlobal.cs" />
@@ -167,14 +154,6 @@
     <Compile Include="Wiimote\WiimoteCalibration.cs" />
     <Compile Include="WindowPlugin.cs" />
     <Compile Include="XBox360Plugin.cs" />
-    <None Include="Yei3SpacePlugin.cs2" />
-    <Compile Include="Yei3Space\Api.cs" />
-    <Compile Include="Yei3Space\Enums.cs" />
-    <Compile Include="Yei3Space\TssComPort.cs" />
-    <Compile Include="Yei3Space\TssStreamPacket.cs" />
-    <None Include="ZeissPlugin.cs2" />
-    <Compile Include="Zeiss\Api.cs" />
-    <Compile Include="Zeiss\Structs.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FreePIE.Core.Contracts\FreePIE.Core.Contracts.csproj">
