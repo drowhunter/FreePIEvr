@@ -111,6 +111,9 @@ int ovr_freepie_read(ovr_freepie_data *output)
 		output->B = ovr_freepie_getButton(&inputState, ovrButton::ovrButton_B);
 		output->X = ovr_freepie_getButton(&inputState, ovrButton::ovrButton_X);
 		output->Y = ovr_freepie_getButton(&inputState, ovrButton::ovrButton_Y);
+
+		output->LeftThumbRest = (inputState.Touches & ovrTouch_::ovrTouch_LThumbRest) ? 0.5f : 0.0f;
+		output->RightThumbRest = (inputState.Touches & ovrTouch_::ovrTouch_RThumbRest) ? 0.5f : 0.0f;
 	}
 
 	return 0;

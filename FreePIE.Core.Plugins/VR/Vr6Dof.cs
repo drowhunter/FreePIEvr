@@ -48,6 +48,9 @@ namespace FreePIE.Core.Plugins.VR
         public float X;
         public float Y;
 
+        public float LeftThumbRest;
+        public float RightThumbRest;
+
         public uint HeadStatus;
         public uint LeftTouchStatus;
         public uint RightTouchStatus;
