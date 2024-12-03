@@ -14,6 +14,7 @@ namespace FreePIE.Core.Plugins
 
         private string m_vrRuntime = OpenVR;
         private VRAPI m_vrAPI;
+        private bool m_invertZ = false;
 
         public OpenVrData Data;
 
@@ -26,6 +27,8 @@ namespace FreePIE.Core.Plugins
         {
             get { return "VR"; }
         }
+
+        public string Runtime => m_vrRuntime;
 
         public override bool GetProperty(int index, IPluginProperty property)
         {
@@ -85,8 +88,13 @@ namespace FreePIE.Core.Plugins
         public override void DoBeforeNextExecute()
         {
             int error = m_vrAPI.Read(out Data);
-            //if (error != 0)
-            //    throw new Exception($"Open VR SDK failed to update ({error})");
+
+            if (m_invertZ)
+            {
+                Data.HeadPose.position.z = -Data.HeadPose.position.z;
+                Data.LeftTouchPose.position.z = -Data.LeftTouchPose.position.z;
+                Data.RightTouchPose.position.z = -Data.RightTouchPose.position.z;
+            }
 
             OnUpdate();
         }
@@ -101,6 +109,11 @@ namespace FreePIE.Core.Plugins
             m_vrAPI.ConfigureInput(inputConfig);
         }
 
+        public void InvertZ(bool inverted)
+        {
+            m_invertZ = inverted;
+        }
+
         public void TriggerHapticPulse(uint controllerIndex, float duration, float frequency, float amplitude)
         {
             m_vrAPI.TriggerHapticPulse(controllerIndex, duration, frequency, amplitude);
@@ -111,6 +124,8 @@ namespace FreePIE.Core.Plugins
     public class VRGlobal : UpdateblePluginGlobal<VRPlugin>
     {
         public VRGlobal(VRPlugin plugin) : base(plugin) { }
+
+        public string runtime => plugin.Runtime;
 
         public Vr6Dof headPose => plugin.Data.HeadPose;
         public Vr6Dof leftTouchPose => plugin.Data.LeftTouchPose;
@@ -141,6 +156,9 @@ namespace FreePIE.Core.Plugins
         public float leftStick => plugin.Data.LeftStick;
         public float rightStick => plugin.Data.RightStick;
         
+        public float leftThumbRest => plugin.Data.LeftThumbRest;
+        public float rightThumbRest => plugin.Data.RightThumbRest;
+
         public void center()
         {
             plugin.Center();
@@ -149,6 +167,11 @@ namespace FreePIE.Core.Plugins
         public void configureInput(uint inputConfig)
         {
             plugin.ConfigureInput(inputConfig);
+        }
+
+        public void invertZ(bool inverted)
+        {
+            plugin.InvertZ(inverted);
         }
 
         public void triggerHapticPulse(uint controllerIndex, float duration, float frequency, float amplitude)

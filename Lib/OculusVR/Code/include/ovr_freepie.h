@@ -33,6 +33,9 @@ typedef struct ovr_freepie_data {
 	float X;
 	float Y;
 
+	float LeftThumbRest;
+	float RightThumbRest;
+
 	unsigned int StatusHead;
 	unsigned int StatusLeftHand;
 	unsigned int StatusRightHand;
