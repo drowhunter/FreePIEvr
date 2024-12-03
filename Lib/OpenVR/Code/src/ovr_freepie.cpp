@@ -29,6 +29,8 @@ vr::VRActionHandle_t m_rightATouch;
 vr::VRActionHandle_t m_rightAClick;
 vr::VRActionHandle_t m_rightBTouch;
 vr::VRActionHandle_t m_rightBClick;
+vr::VRActionHandle_t m_leftThumbRestTouch;
+vr::VRActionHandle_t m_rightThumbRestTouch;
 vr::VRActionHandle_t m_leftHaptic;
 vr::VRActionHandle_t m_rightHaptic;
 
@@ -120,12 +122,19 @@ int ovr_freepie_init()
 	if (inputError != vr::VRInputError_None)
 		return 119;
 
-	inputError = vr::VRInput()->GetActionHandle("/actions/freepie/out/haptic_left", &m_leftHaptic);
+	inputError = vr::VRInput()->GetActionHandle("/actions/freepie/in/button_touch_thumb_rest_left", &m_leftThumbRestTouch);
 	if (inputError != vr::VRInputError_None)
 		return 120;
-	inputError = vr::VRInput()->GetActionHandle("/actions/freepie/out/haptic_right", &m_rightHaptic);
+	inputError = vr::VRInput()->GetActionHandle("/actions/freepie/in/button_touch_thumb_rest_right", &m_rightThumbRestTouch);
 	if (inputError != vr::VRInputError_None)
 		return 121;
+
+	inputError = vr::VRInput()->GetActionHandle("/actions/freepie/out/haptic_left", &m_leftHaptic);
+	if (inputError != vr::VRInputError_None)
+		return 122;
+	inputError = vr::VRInput()->GetActionHandle("/actions/freepie/out/haptic_right", &m_rightHaptic);
+	if (inputError != vr::VRInputError_None)
+		return 123;
 
 	return 0;
 }
@@ -360,6 +369,31 @@ int ovr_freepie_read(ovr_freepie_data *output)
 	else
 	{
 		output->B = 0.0f;
+	}
+
+	inputError = vr::VRInput()->GetDigitalActionData(m_leftThumbRestTouch, &digitalTouchAction, sizeof(digitalTouchAction), vr::k_ulInvalidInputValueHandle);
+	if (inputError != vr::VRInputError_None)
+		return 120;
+	if (digitalTouchAction.bState)
+	{
+		output->LeftThumbRest = 0.5f;
+	}
+	else
+	{
+		output->LeftThumbRest = 0.0f;
+	}
+
+
+	inputError = vr::VRInput()->GetDigitalActionData(m_rightThumbRestTouch, &digitalTouchAction, sizeof(digitalTouchAction), vr::k_ulInvalidInputValueHandle);
+	if (inputError != vr::VRInputError_None)
+		return 121;
+	if (digitalTouchAction.bState)
+	{
+		output->RightThumbRest = 0.5f;
+	}
+	else
+	{
+		output->RightThumbRest = 0.0f;
 	}
 
 	return 0;

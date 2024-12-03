@@ -133,6 +133,16 @@
 			"type": "boolean"
 		},
 		{
+			"name": "/actions/freepie/in/button_touch_thumb_rest_left",
+			"requirement" : "optional",
+			"type": "boolean"
+		},
+		{
+			"name": "/actions/freepie/in/button_touch_thumb_rest_right",
+			"requirement" : "optional",
+			"type": "boolean"
+		},
+		{
 			"name": "/actions/freepie/out/haptic_left",
 			"requirement" : "suggested",
 			"type": "vibration"
