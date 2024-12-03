@@ -11,6 +11,7 @@ using FreePIE.GUI.Shells.Curves;
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 
@@ -90,19 +91,18 @@ namespace FreePIE.GUI.Views.Curves
         public void Script()
         {
             
-            string python = $"{Curve.Name} = curves.create({Curve.Points.First().X}, {Curve.Points.Last().X}";
+            string python = $"{Curve.Name} = curves.create({Curve.Points.First().X.ToString(CultureInfo.InvariantCulture)}, {Curve.Points.Last().X.ToString(CultureInfo.InvariantCulture)}";
             foreach (var point in Curve.Points.Skip(1).TakeAllButLast())
             {                
-                python += $", {point.X:0.000}, {point.Y:0.000}";
+                python += $", {point.X.ToString("0.000", CultureInfo.InvariantCulture)}, {point.Y.ToString("0.000", CultureInfo.InvariantCulture)}";
             }
             python += ")";
-            
-            
+
             try
             {
                 Clipboard.SetDataObject(python);
             }
-            catch(Exception x)
+            catch (Exception)
             {   
 
             }
