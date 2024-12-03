@@ -12,6 +12,7 @@ namespace FreePIE.Core.Plugins.VR
         bool Dispose();
         bool Center();
         void ConfigureInput(uint inputConfig);
+        void ConfigureDebug(uint debugFlags);
         void TriggerHapticPulse(uint controllerIndex, float duration, float frequency, float amplitude);
     }
 
@@ -49,6 +50,7 @@ namespace FreePIE.Core.Plugins.VR
         }
 
         public void ConfigureInput(uint inputConfig) { }
+        public void ConfigureDebug(uint debugFlags) { }
 
         public void TriggerHapticPulse(uint controllerIndex, float duration, float frequency, float amplitude)
         {
@@ -90,6 +92,7 @@ namespace FreePIE.Core.Plugins.VR
         }
 
         public void ConfigureInput(uint inputConfig) { }
+        public void ConfigureDebug(uint debugFlags) { }
 
         public void TriggerHapticPulse(uint controllerIndex, float duration, float frequency, float amplitude)
         {
@@ -109,6 +112,8 @@ namespace FreePIE.Core.Plugins.VR
         private extern static int ovr_freepie_reset_orientation();
         [DllImport("OpenXRFreePIE.dll", CallingConvention = CallingConvention.Cdecl)]
         private extern static int ovr_freepie_configure_input(uint inputConfig);
+        [DllImport("OpenXRFreePIE.dll", CallingConvention = CallingConvention.Cdecl)]
+        private extern static int ovr_freepie_configure_debug(uint debugFlags);
         [DllImport("OpenXRFreePIE.dll", CallingConvention = CallingConvention.Cdecl)]
         private extern static int ovr_freepie_trigger_haptic_pulse(uint controllerIndex, float duration, float frequency, float amplitude);
 
@@ -170,6 +175,10 @@ namespace FreePIE.Core.Plugins.VR
         public void ConfigureInput(uint inputConfig)
         {
             ovr_freepie_configure_input(inputConfig);
+        }
+        public void ConfigureDebug(uint debugFlags)
+        {
+            ovr_freepie_configure_debug(debugFlags);
         }
 
         public void TriggerHapticPulse(uint controllerIndex, float duration, float frequency, float amplitude)

@@ -35,6 +35,9 @@ typedef struct ovr_freepie_data {
 	float X;
 	float Y;
 
+	float LeftThumbRest;
+	float RightThumbRest;
+
 	unsigned int StatusHead;
 	unsigned int StatusLeftHand;
 	unsigned int StatusRightHand;
@@ -47,6 +50,7 @@ int ovr_freepie_read(ovr_freepie_data *output);
 int ovr_freepie_destroy();
 int ovr_freepie_reset_orientation();
 int ovr_freepie_configure_input(unsigned int inputConfig);
+int ovr_freepie_configure_debug(unsigned int debugFlags);
 int ovr_freepie_trigger_haptic_pulse(unsigned int controllerIndex, float duration, float frequency, float amplitude);
 
 namespace openxr_api_layer

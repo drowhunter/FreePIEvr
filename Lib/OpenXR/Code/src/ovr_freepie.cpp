@@ -26,8 +26,18 @@ typedef struct ovr_freepie_input
 	ovr_freepie_haptics RightHaptics;
 
 	unsigned int BlockedInputs;
+
+	unsigned int DebugFlags;
+
+	unsigned int AvailableExtensions;
 } ovr_freepie_input;
 
+const unsigned int DEBUG_PRINT_SUGGESTION_PATH = 1;
+const unsigned int DEBUG_PRINT_BINDING_ERRORS = 2;
+
+const unsigned int EXTENSION_HAND_TRACKING = 1;
+
+const char* DEBUG_FILENAME = "x:/test.txt";
 
 // memory mapped file
 HANDLE hOutputFileMapping;
@@ -102,6 +112,24 @@ int ovr_freepie_init()
 	ovr_freepie_configure_input(0);
 	m_output->HmdMounted = false;
 
+	// check if extension is available
+	// get extension count
+	uint32_t extensionCount = 0;
+	std::vector<XrExtensionProperties> extensionProperties;
+	xrEnumerateInstanceExtensionProperties(nullptr, 0, &extensionCount, nullptr);
+
+	// get extension list
+	extensionProperties.resize(extensionCount, { XR_TYPE_EXTENSION_PROPERTIES });
+	xrEnumerateInstanceExtensionProperties(nullptr, extensionCount, &extensionCount, extensionProperties.data());
+	for (auto& extensionProperty : extensionProperties) {
+		// strcmp returns 0 if the strings match.
+		if (strcmp(XR_EXT_HAND_INTERACTION_EXTENSION_NAME, extensionProperty.extensionName) == 0)
+		{
+			m_input->AvailableExtensions |= EXTENSION_HAND_TRACKING;
+			break;
+		}
+	}
+
 	return 0;
 }
 
@@ -146,10 +174,14 @@ int ovr_freepie_read(ovr_freepie_data *output)
 
 int ovr_freepie_configure_input(unsigned int inputConfig)
 {
-	if (inputConfig)
-	{
-		m_input->BlockedInputs = inputConfig;
-	}
+	m_input->BlockedInputs = inputConfig;
+
+	return 0;
+}
+
+int ovr_freepie_configure_debug(unsigned int debugFlags)
+{
+	m_input->DebugFlags = debugFlags;
 
 	return 0;
 }
@@ -217,6 +249,7 @@ namespace openxr_api_layer
 	XrAction m_aTouchAction;
 	XrAction m_bClickAction;
 	XrAction m_bTouchAction;
+	XrAction m_thumbrestTouchAction;
 	XrAction m_hapticAction;
 
 	XrPath m_handPaths[2] = { 0, 0 };
@@ -238,6 +271,7 @@ namespace openxr_api_layer
 	std::vector<XrActionSuggestedBinding> m_bindings_vive_controller;
 	std::vector<XrActionSuggestedBinding> m_bindings_motion_controller;
 	std::vector<XrActionSuggestedBinding> m_bindings_touch_controller;
+	std::vector<XrActionSuggestedBinding> m_bindings_hand_controller;
 	std::vector<XrActionSuggestedBinding> m_bindings_index_controller;
 
 
@@ -279,18 +313,6 @@ namespace openxr_api_layer
 
 		return XR_SUCCEEDED(result);
 	};
-
-	void log(const std::string& message)
-	{
-		// Open log file
-		std::ofstream logfile("x:\freepie_opexr_log.txt", std::ios::app); // Open for appending
-
-		// Write log message with timestamp to file
-		if (logfile.is_open()) {
-			logfile << _layerName << ": " << message << std::endl;
-			logfile.close();
-		}
-	}
 
 	XrResult SuggestBindings(const char* profile_path, std::vector<XrActionSuggestedBinding> bindings)
 	{
@@ -403,6 +425,7 @@ namespace openxr_api_layer
 		CreateAction(m_aTouchAction, "a-touch", XR_ACTION_TYPE_BOOLEAN_INPUT, { "/user/hand/left", "/user/hand/right" });
 		CreateAction(m_bClickAction, "b-click", XR_ACTION_TYPE_BOOLEAN_INPUT, { "/user/hand/left", "/user/hand/right" });
 		CreateAction(m_bTouchAction, "b-touch", XR_ACTION_TYPE_BOOLEAN_INPUT, { "/user/hand/left", "/user/hand/right" });
+		CreateAction(m_thumbrestTouchAction, "thumbrest-touch", XR_ACTION_TYPE_BOOLEAN_INPUT, { "/user/hand/left", "/user/hand/right" });
 		CreateAction(m_hapticAction, "haptic", XR_ACTION_TYPE_VIBRATION_OUTPUT, { "/user/hand/left", "/user/hand/right" });
 
 
@@ -443,9 +466,14 @@ namespace openxr_api_layer
 	{
 		// always allow poses and haptics for left controller
 		std::string pathString = FromXrPath(path);
-		//std::ofstream file;
-		//file.open("x:/test.txt", std::ios::out | std::ios::app);
-		//file << "suggestion " << pathString << std::endl;
+
+		if (m_input->DebugFlags & DEBUG_PRINT_SUGGESTION_PATH)
+		{
+			std::ofstream file;
+			file.open(DEBUG_FILENAME, std::ios::out | std::ios::app);
+			file << "suggestion " << pathString << std::endl;
+		}
+
 		if (pathString == "/user/hand/left/input/aim/pose")
 			return true;
 		if (pathString == "/user/hand/left/input/grip/pose")
@@ -676,6 +704,16 @@ namespace openxr_api_layer
 				}
 			}
 		}
+		else if (profile == "/interaction_profiles/ext/hand_interaction_ext")
+		{
+			for (unsigned int i = 0; i < suggestedBindings->countSuggestedBindings; ++i)
+			{
+				if (AllowSuggestion(suggestedBindings->suggestedBindings[i].binding))
+				{
+					m_bindings_hand_controller.push_back(suggestedBindings->suggestedBindings[i]);
+				}
+			}			
+		}
 		else if (profile == "/interaction_profiles/valve/index_controller")
 		{
 			for (unsigned int i = 0; i < suggestedBindings->countSuggestedBindings; ++i)
@@ -688,6 +726,16 @@ namespace openxr_api_layer
 		}
 
 		return XR_SUCCESS;
+	}
+
+	void PrintBindingError(const char* binding, XrResult result)
+	{
+		if (m_input->DebugFlags & DEBUG_PRINT_BINDING_ERRORS)
+		{
+			std::ofstream file;
+			file.open(DEBUG_FILENAME, std::ios::out | std::ios::app);
+			file << binding << " " << result << std::endl;
+		}
 	}
 
 	XrResult _xrAttachSessionActionSets(XrSession session, const XrSessionActionSetsAttachInfo* attachInfo)
@@ -705,7 +753,10 @@ namespace openxr_api_layer
 
 			result = SuggestBindings("/interaction_profiles/khr/simple_controller", m_bindings_simple_controller);
 			if (XR_FAILED(result))
+			{
+				PrintBindingError("simple_controller", result);
 				return result;
+			}
 		}
 
 		// htc vive
@@ -729,7 +780,10 @@ namespace openxr_api_layer
 
 			result = SuggestBindings("/interaction_profiles/htc/vive_controller", m_bindings_vive_controller);
 			if (XR_FAILED(result))
+			{
+				PrintBindingError("vive_controller", result);
 				return result;
+			}
 		}
 
 		// mxr		
@@ -753,7 +807,10 @@ namespace openxr_api_layer
 
 			result = SuggestBindings("/interaction_profiles/microsoft/motion_controller", m_bindings_motion_controller);
 			if (XR_FAILED(result))
+			{
+				PrintBindingError("motion_controller", result);
 				return result;
+			}
 		}
 
 		// oculus
@@ -772,6 +829,8 @@ namespace openxr_api_layer
 			m_bindings_touch_controller.push_back({ m_stickXAction, CreateXrPath("/user/hand/right/input/thumbstick/x") });
 			m_bindings_touch_controller.push_back({ m_stickYAction, CreateXrPath("/user/hand/left/input/thumbstick/y") });
 			m_bindings_touch_controller.push_back({ m_stickYAction, CreateXrPath("/user/hand/right/input/thumbstick/y") });
+			m_bindings_touch_controller.push_back({ m_thumbrestTouchAction, CreateXrPath("/user/hand/left/input/thumbrest/touch") });
+			m_bindings_touch_controller.push_back({ m_thumbrestTouchAction, CreateXrPath("/user/hand/right/input/thumbrest/touch") });
 			m_bindings_touch_controller.push_back({ m_stickClickAction, CreateXrPath("/user/hand/left/input/thumbstick/click") });
 			m_bindings_touch_controller.push_back({ m_stickClickAction, CreateXrPath("/user/hand/right/input/thumbstick/click") });
 			m_bindings_touch_controller.push_back({ m_stickTouchAction, CreateXrPath("/user/hand/left/input/thumbstick/touch") });
@@ -785,7 +844,28 @@ namespace openxr_api_layer
 
 			result = SuggestBindings("/interaction_profiles/oculus/touch_controller", m_bindings_touch_controller);
 			if (XR_FAILED(result))
+			{
+				PrintBindingError("touch_controller", result);
 				return result;
+			}
+		}
+
+		// hand tracking
+		{
+			m_bindings_hand_controller.push_back({ m_gripAction, CreateXrPath("/user/hand/left/input/grasp_ext/value") });
+			m_bindings_hand_controller.push_back({ m_gripAction, CreateXrPath("/user/hand/right/input/grasp_ext/value") });
+			m_bindings_hand_controller.push_back({ m_triggerAction, CreateXrPath("/user/hand/left/input/pinch_ext/value") });
+			m_bindings_hand_controller.push_back({ m_triggerAction, CreateXrPath("/user/hand/right/input/pinch_ext/value") });
+			m_bindings_hand_controller.push_back({ m_handPoseAction, CreateXrPath("/user/hand/left/input/aim/pose") });
+			m_bindings_hand_controller.push_back({ m_handPoseAction, CreateXrPath("/user/hand/right/input/aim/pose") });
+
+			result = SuggestBindings("/interaction_profiles/ext/hand_interaction_ext", m_bindings_hand_controller);
+			if (XR_FAILED(result))
+			{
+				PrintBindingError("hand_interaction_ext", result);
+				// experimental bindings don't break
+				// return result;
+			}
 		}
 
 		// valve index
@@ -817,7 +897,10 @@ namespace openxr_api_layer
 
 			result = SuggestBindings("/interaction_profiles/valve/index_controller", m_bindings_index_controller);
 			if (XR_FAILED(result))
+			{
+				PrintBindingError("index_controller", result);
 				return result;
+			}
 		}
 
 		// join action sets
@@ -986,6 +1069,17 @@ namespace openxr_api_layer
 		m_output->Y = m_clickState[0].currentState ? 1.0f : (m_touchState[0].currentState ? 0.5f : 0.0f);
 		m_output->B = m_clickState[1].currentState ? 1.0f : (m_touchState[1].currentState ? 0.5f : 0.0f);
 
+		// thumbrest
+		for (int i = 0; i < 2; i++) {
+			actionStateGetInfo.action = m_thumbrestTouchAction;
+			actionStateGetInfo.subactionPath = m_handPaths[i];
+			result = _nextXrGetActionStateBoolean(m_session, &actionStateGetInfo, &m_touchState[i]);
+			if (XR_FAILED(result))
+				return result;
+		}
+		m_output->LeftThumbRest = m_touchState[0].currentState ? 0.5f : 0.0f;
+		m_output->RightThumbRest = m_touchState[1].currentState ? 0.5f : 0.0f;
+
 		// head position
 		{
 			XrSpaceLocation spaceLocation = { XR_TYPE_SPACE_LOCATION, NULL, 0, {{0, 0, 0, 1}, {0, 0, 0}} };
@@ -1073,7 +1167,40 @@ namespace openxr_api_layer
 
 	// Entry point for creating the layer.
 	XrResult xrCreateApiLayerInstance(const XrInstanceCreateInfo* const info, const struct XrApiLayerCreateInfo* const apiLayerInfo, XrInstance* const instance)
-	{		
+	{
+		// create memory mapped files
+		if (InitIPC() != 0)
+			return XR_ERROR_HANDLE_INVALID;
+
+		std::vector<const char*> activeExtensions;
+
+		// check whether hand tracking is already required
+		bool found = false;
+		for (int i = 0; i < info->enabledExtensionCount; i++)
+		{
+			auto extensionProperty = info->enabledExtensionNames[i];
+			// strcmp returns 0 if the strings match.
+			if (strcmp(XR_EXT_HAND_INTERACTION_EXTENSION_NAME, extensionProperty) == 0)
+			{
+				found = true;
+				break;
+			}
+		}
+		// if not but available, add it to the enabled extensions
+		if (found == false && m_input->AvailableExtensions & EXTENSION_HAND_TRACKING)
+		{
+			for (int i = 0; i < info->enabledExtensionCount; i++)
+			{
+				activeExtensions.push_back(info->enabledExtensionNames[i]);
+			}
+			activeExtensions.push_back(XR_EXT_HAND_INTERACTION_EXTENSION_NAME);
+
+			XrInstanceCreateInfo* minfo = const_cast<XrInstanceCreateInfo*>(info);
+
+			minfo->enabledExtensionCount = activeExtensions.size();
+			minfo->enabledExtensionNames = activeExtensions.data();
+		}
+
 		// first let the instance be created
 		XrResult result = apiLayerInfo->nextInfo->nextCreateApiLayerInstance(info, apiLayerInfo, instance);
 		if (XR_FAILED(result))
@@ -1156,10 +1283,6 @@ namespace openxr_api_layer
 		// cache instance
 		m_instanceInfo = *info;
 		m_instance = *instance;
-
-		// create memory mapped files
-		if (ovr_freepie_init() != 0)
-			return XR_ERROR_HANDLE_INVALID;
 
 		m_output->HmdMounted = true;
 

@@ -108,6 +108,10 @@ namespace FreePIE.Core.Plugins
         {
             m_vrAPI.ConfigureInput(inputConfig);
         }
+        public void ConfigureDebug(uint debugFlags)
+        {
+            m_vrAPI.ConfigureDebug(debugFlags);
+        }
 
         public void InvertZ(bool inverted)
         {
@@ -167,6 +171,11 @@ namespace FreePIE.Core.Plugins
         public void configureInput(uint inputConfig)
         {
             plugin.ConfigureInput(inputConfig);
+        }
+
+        public void configureDebug(uint debugFlags)
+        {
+            plugin.ConfigureDebug(debugFlags);
         }
 
         public void invertZ(bool inverted)
