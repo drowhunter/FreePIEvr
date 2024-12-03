@@ -103,6 +103,7 @@ namespace FreePIE.Core.Plugins
         {
             m_vrAPI.Center();
         }
+        
 
         public void ConfigureInput(uint inputConfig)
         {
@@ -124,16 +125,66 @@ namespace FreePIE.Core.Plugins
         }
     }
 
+    public class Vr6DofGlobal
+    {
+        private const float RadToDeg = 57.2958f;
+
+        public Vectorf left;
+        public Vectorf up;
+        public Vectorf forward;
+        public Vectorf position;
+
+        public float x => position.x;
+        public float y => position.y;
+        public float z => position.z;
+
+        /// <summary>
+        /// the pitch in degrees
+        /// </summary>
+        public float pitch => (float)Math.Asin(forward.y) * RadToDeg;
+
+        /// <summary>
+        /// the yaw in degrees
+        /// </summary>
+        public float yaw => (float)Math.Atan2(left.z, left.x) * RadToDeg;
+
+        /// <summary>
+        /// the roll in degrees
+        /// </summary>
+        public float roll
+        {
+            get
+            {
+                var yaw = Math.Atan2(forward.z, forward.x);
+                var planeRightX = Math.Sin(yaw);
+                var planeRightZ = -Math.Cos(yaw);
+                return (float)Math.Asin(Math.Max(-1, Math.Min(1, up.x * planeRightX + up.z * planeRightZ))) * RadToDeg;
+            }
+        }
+
+        public static implicit operator Vr6DofGlobal(Vr6Dof obj)
+        {
+            return new Vr6DofGlobal { 
+                left = obj.left,
+                up = obj.up,
+                forward = obj.forward,
+                position = obj.position,
+
+            };
+        }
+    }
+
     [Global(Name = "vr")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
     public class VRGlobal : UpdateblePluginGlobal<VRPlugin>
     {
         public VRGlobal(VRPlugin plugin) : base(plugin) { }
 
-        public string runtime => plugin.Runtime;
+        public Vr6DofGlobal headPose => plugin.Data.HeadPose;
+        public Vr6DofGlobal leftTouchPose => plugin.Data.LeftTouchPose;
+        public Vr6DofGlobal rightTouchPose => plugin.Data.RightTouchPose;
 
-        public Vr6Dof headPose => plugin.Data.HeadPose;
-        public Vr6Dof leftTouchPose => plugin.Data.LeftTouchPose;
-        public Vr6Dof rightTouchPose => plugin.Data.RightTouchPose;
+        public string runtime => plugin.Runtime;
 
         public uint headStatus => plugin.Data.HeadStatus;
         public uint leftTouchStatus => plugin.Data.LeftTouchStatus;
@@ -163,15 +214,9 @@ namespace FreePIE.Core.Plugins
         public float leftThumbRest => plugin.Data.LeftThumbRest;
         public float rightThumbRest => plugin.Data.RightThumbRest;
 
-        public void center()
-        {
-            plugin.Center();
-        }
+        public void center() => plugin.Center();
 
-        public void configureInput(uint inputConfig)
-        {
-            plugin.ConfigureInput(inputConfig);
-        }
+        public void configureInput(uint inputConfig) => plugin.ConfigureInput(inputConfig);
 
         public void configureDebug(uint debugFlags)
         {
