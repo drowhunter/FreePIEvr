@@ -14,6 +14,10 @@ internal partial class DualShock4Controller
 
     public ref byte RightThumbY => ref _nativeReport.bThumbRY;
 
+    public ref ushort ButtonState => ref _nativeReport.wButtons;
+
+    public ref byte SpecialButtonState => ref _nativeReport.bSpecial;
+
     public void SetButtonsFull(ushort buttons)
     {
         _nativeReport.wButtons = buttons;
