@@ -106,6 +106,9 @@
     <Compile Include="MouseKeyboard\MouseKeyIO.cs" />
     <Compile Include="MouseKeyboard\MousePlugin.cs" />
     <Compile Include="OpenTrackPlugin.cs" />
+    <Compile Include="vigem\DualShockOutputPlugin.cs" />
+    <Compile Include="vigem\ViGemPluginBase.cs" />
+    <Compile Include="vigem\XboxOutputPlugin.cs" />
     <Compile Include="VRPlugin.cs" />
     <Compile Include="VR\Api.cs" />
     <Compile Include="VR\Vr6Dof.cs" />

@@ -86,7 +86,7 @@ internal partial class Xbox360Controller : ViGEmTarget, IXbox360Controller
         // 
         _notificationCallback = (client, target, largeMotor, smallMotor, number, userData) =>
         {
-            UserIndex = number;
+            _userIndex = number;
 
             FeedbackReceived?.Invoke(this,
                 new Xbox360FeedbackReceivedEventArgs(largeMotor, smallMotor, number));
