@@ -95,7 +95,7 @@ namespace FreePIE.Core.Plugins.joystick
             {
                 try
                 {
-                    Debug.WriteLine("Stopping Joystick {0}", j.JoystickName);
+                    Debug.WriteLine("Stopping Joystick {0}", j.name);
                 }
                 finally
                 {
