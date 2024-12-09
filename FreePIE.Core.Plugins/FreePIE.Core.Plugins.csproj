@@ -95,8 +95,6 @@
     <Compile Include="joystick\JoystickGlobal.cs" />
     <Compile Include="joystick\JoystickPlugin.cs" />
     <Compile Include="KeyboardPlugin.cs" />
-    <Compile Include="keyboard\key.cs" />
-    <Compile Include="keyboard\KeyCollection.cs" />
     <Compile Include="keyboard\SharpKeys.cs" />
     <Compile Include="MemoryMapping\ArgumentExtension.cs" />
     <Compile Include="MemoryMapping\DisconnectedFreepieData.cs" />
