@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.IO.Ports;
+using System.Runtime.InteropServices;
 using System.Threading;
 using FreePIE.Core.Common;
 using FreePIE.Core.Common.Events;
@@ -11,13 +13,42 @@ namespace FreePIE.Console
 {
     public class ConsoleHost : IHandle<WatchEvent>, IHandle<ScriptErrorEvent>
     {
+        #region Trap application termination
+        [DllImport("Kernel32")]
+        private static extern bool SetConsoleCtrlHandler(EventHandler handler, bool add);
+
+        private delegate bool EventHandler(CtrlType sig);
+        static EventHandler _handler;
+
+        enum CtrlType
+        {
+            CTRL_C_EVENT = 0,
+            CTRL_BREAK_EVENT = 1,
+            CTRL_CLOSE_EVENT = 2,
+            CTRL_LOGOFF_EVENT = 5,
+            CTRL_SHUTDOWN_EVENT = 6
+        }
+
+        private bool Handler(CtrlType sig)
+        {
+            Stop();
+
+            return true;
+        }
+        #endregion
+
         private readonly IScriptEngine scriptEngine;
         private readonly IPersistanceManager persistanceManager;
         private readonly IFileSystem fileSystem;
         private readonly AutoResetEvent waitUntilStopped;
+        private int stopped;
 
         public ConsoleHost(IScriptEngine scriptEngine, IPersistanceManager persistanceManager, IFileSystem fileSystem, IEventAggregator eventAggregator)
         {
+            // Some boilerplate to react to close window event, CTRL-C, kill, etc
+            _handler += new EventHandler(Handler);
+            SetConsoleCtrlHandler(_handler, true);
+
             this.scriptEngine = scriptEngine;
             this.persistanceManager = persistanceManager;
             this.fileSystem = fileSystem;
@@ -73,6 +104,10 @@ namespace FreePIE.Console
 
         private void Stop()
         {
+            int stop = Interlocked.Exchange(ref stopped, 1);
+            if (stop == 1)
+                return;
+
             System.Console.WriteLine("Stopping script parser");
             scriptEngine.Stop();
 
