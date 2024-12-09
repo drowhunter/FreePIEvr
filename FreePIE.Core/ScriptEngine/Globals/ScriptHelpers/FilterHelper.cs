@@ -115,7 +115,7 @@ namespace FreePIE.Core.ScriptEngine.Globals.ScriptHelpers
 
         public double ensureMapRange(double x, double xMin, double xMax, double yMin, double yMax)
         {
-            return Math.Max(Math.Min(((x - xMin)/(xMax - xMin))*(yMax - yMin) + yMin, yMax), yMin);
+            return Math.Max(Math.Min(mapRange(x, xMin, xMax, yMin, yMax), Math.Max(yMin, yMax)), Math.Min(yMin, yMax));
         }
 
         [NeedIndexer]

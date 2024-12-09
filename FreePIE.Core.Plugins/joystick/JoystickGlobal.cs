@@ -8,9 +8,9 @@ using System.Linq;
 
 namespace FreePIE.Core.Plugins.joystick
 {
-    internal class JoyProp
+    public class JoyProp
     {
-        public string name; public bool isHalfAxis; public int min; public int max;
+        public string name; public JoystickOffset offset; public ObjectProperties props;
     }
 
     [Global(Name = "joystick")]
@@ -20,7 +20,7 @@ namespace FreePIE.Core.Plugins.joystick
         private readonly Joystick _joystick;
 
         private JoystickState state;
-        public JoystickState State
+        internal JoystickState State
         {
             get { return state ?? (state = _joystick.GetCurrentState()); }
         }
@@ -28,15 +28,19 @@ namespace FreePIE.Core.Plugins.joystick
         public event EventHandler<JoystickEventArgs> Updated;
         public event EventHandler Started, Stopped;
 
-        public Capabilities caps { get { return _joystick.Capabilities; } }
-                
-        public int numButtons { get { return _joystick.Capabilities.ButtonCount; } }
+        internal Capabilities caps { get { return _joystick.Capabilities; } }
 
-        public int numAxes { get { return _joystick.Capabilities.AxeCount; } }
+        internal int numButtons { get { return _joystick.Capabilities.ButtonCount; } }
 
-        public int numPovs { get { return _joystick.Capabilities.PovCount; } }
+        internal int numAxes { get { return _joystick.Capabilities.AxeCount; } }
 
-        private Dictionary<string, JoyProp> AxisInfo { get; } 
+        internal int numPovs { get { return _joystick.Capabilities.PovCount; } }
+
+        internal Dictionary<JoystickOffset, JoyProp> AxisInfo { get; }
+
+
+        private static List<JoystickOffset> joystickAxisOffsets = new List<JoystickOffset>() { JoystickOffset.X, JoystickOffset.Y, JoystickOffset.Z, JoystickOffset.RotationX, JoystickOffset.RotationY, JoystickOffset.RotationZ, JoystickOffset.Sliders0, JoystickOffset.Sliders1 };
+
 
         public JoystickGlobal(int index, Joystick joystick)
         {
@@ -46,10 +50,17 @@ namespace FreePIE.Core.Plugins.joystick
 
             buttons = new bool[numButtons];
 
-            var objProps = joystick.GetObjects().Where(o => (o.ObjectId.Flags & DeviceObjectTypeFlags.NoData) == 0) .ToDictionary(o => o.ObjectId.ToString(), o => (name: o.Name, flags: o.ObjectId.Flags, props: joystick.GetObjectPropertiesById(o.ObjectId)));
-
-            AxisInfo = objProps.Where(f => (f.Value.flags & DeviceObjectTypeFlags.Axis) != 0).ToDictionary(o => o.Value.name, v => new JoyProp { isHalfAxis = v.Value.props.LogicalRange.Minimum == 0,min = v.Value.props.Range.Minimum, max = v.Value.props.Range.Maximum, name = v.Value.name });           
-
+            AxisInfo = new Dictionary<JoystickOffset, JoyProp>();
+            for (int i = 0; i < joystickAxisOffsets.Count; i++)
+            {
+                try
+                {
+                    var mightGoBoom = joystick.GetObjectInfoByName(joystickAxisOffsets[i].ToString());
+                    AxisInfo.Add(joystickAxisOffsets[i], new JoyProp { offset = joystickAxisOffsets[i], name = mightGoBoom.Name, props = joystick.GetObjectPropertiesById(mightGoBoom.ObjectId) });
+                }
+                catch { }
+            }
+          
         }
         
         public void Dispose()
@@ -70,9 +81,14 @@ namespace FreePIE.Core.Plugins.joystick
             Updated?.Invoke(this, new JoystickEventArgs(state));
         }
 
-        private float ensureMapRange(float x, float xMin, float xMax, float yMin, float yMax)
+        private double mapRange(double x, double xMin, double xMax, double yMin, double yMax)
         {
-            return Math.Max(Math.Min(((x - xMin) / (xMax - xMin)) * (yMax - yMin) + yMin, yMax), yMin);
+            return yMin + (yMax - yMin) * (x - xMin) / (xMax - xMin);
+        }
+
+        private double ensureMapRange(double x, double xMin, double xMax, double yMin, double yMax)
+        {
+            return Math.Max(Math.Min(mapRange(x, xMin, xMax, yMin, yMax), Math.Max(yMin, yMax)), Math.Min(yMin, yMax));
         }
 
         #region stuff
@@ -84,33 +100,33 @@ namespace FreePIE.Core.Plugins.joystick
         {
             get 
             {
-                return todouble(State.X, "X Axis");
+                return normalize(State.X, JoystickOffset.X);
             }
         }
 
         public float y
         {
-            get { return todouble(State.Y, "Y Axis"); }
+            get { return normalize(State.Y, JoystickOffset.Y); }
         }
 
         public float z
         {
-            get { return todouble(State.Z, "Z Axis"); }
+            get { return normalize(State.Z, JoystickOffset.Z); }
         }
 
         public float rotationX
         {
-            get { return todouble(State.RotationX, "X Rotation"); }
+            get { return normalize(State.RotationX, JoystickOffset.RotationX); }
         }
 
         public float rotationY
         {
-            get { return todouble(State.RotationY, "Y Rotation"); }
+            get { return normalize(State.RotationY, JoystickOffset.RotationZ); }
         }
 
         public float rotationZ
         {
-            get { return todouble(State.RotationZ, "Z Rotation"); }
+            get { return normalize(State.RotationZ, JoystickOffset.RotationZ); }
         }
 
         
@@ -119,7 +135,7 @@ namespace FreePIE.Core.Plugins.joystick
 
         public float[] sliders
         {
-            get { return State.Sliders.Select(s => todouble(s, "Slider")).ToArray(); }
+            get { return State.Sliders.Select((s,i) => normalize(s, i == 0 ? JoystickOffset.Sliders0 : JoystickOffset.Sliders1 )).ToArray(); }
         }
 
         public int[] pov
@@ -134,14 +150,14 @@ namespace FreePIE.Core.Plugins.joystick
             }
         }
 
-        private float todouble(int value, string axis )
+        private float normalize(int value, JoystickOffset axis )
         {
-            
-            if (AxisInfo.TryGetValue(axis, out JoyProp xprop))
-            {
-                return ensureMapRange(value, xprop.min, xprop.max, xprop.isHalfAxis ? 0 : -1, 1);
-            }
-            return (value * 1.0f);
+            // Revisit this later if we want to make the output similar to GLovepie values between -1 and 1
+            //if (AxisInfo.TryGetValue(axis, out JoyProp p))
+            //{
+            //    return ensureMapRange(value, p.props.Range.Minimum, p.props.Range.Maximum, -1, 1);
+            //}
+            return value;
         }
         #endregion
     }
