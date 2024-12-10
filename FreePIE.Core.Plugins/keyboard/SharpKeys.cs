@@ -1,19 +1,11 @@
 ﻿using FreePIE.Core.Contracts;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace FreePIE.Core.Plugins
 {
-
 
     [GlobalEnum]
     public enum Key
     {
-
         Escape = 1,
         D1 = 2,
         D2 = 3,
@@ -25,9 +17,6 @@ namespace FreePIE.Core.Plugins
         D8 = 9,
         D9 = 10,
         D0 = 11,
-
-
-
         Minus = 12,
         Equals = 13,
         Back = 14,
