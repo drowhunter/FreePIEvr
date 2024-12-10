@@ -97,7 +97,7 @@ namespace FreePIE.Core.Plugins
 
         public bool IsKeyUp(Key keycode) => !IsKeyDown(keycode);
 
-        public bool WasKeyPressed(Key key)
+        public bool WasKeyTapped(Key key)
         {
             return getKeyPressedStrategy.IsPressed(key);
         }
@@ -147,12 +147,12 @@ namespace FreePIE.Core.Plugins
             }
         }
 
-        public void PressAndRelease(Key keycode)
+        public void TapKey(Key keycode)
         {
             setKeyPressedStrategy.Add(keycode);
         }
 
-        public void PressAndRelease(Key keycode, bool state)
+        public void TapKey(Key keycode, bool state)
         {
             setKeyPressedStrategy.Add(keycode, state);
         }
@@ -168,27 +168,12 @@ namespace FreePIE.Core.Plugins
             this.plugin = plugin;
         }
 
-        protected bool getKeyDown(Key key)
+        public bool getKey(Key key)
         {
             return plugin.IsKeyDown(key);
         }
 
-        public void setKeyDown(Key key)
-        {
-            plugin.SendKeyDown(key);
-        }
-
-        public bool getKeyUp(Key key)
-        {
-            return plugin.IsKeyUp(key);
-        }
-
-        public void setKeyUp(Key key)
-        {
-            plugin.SendKeyUp(key);
-        }
-
-        protected void setKey(Key key, bool down)
+        public void setKey(Key key, bool down)
         {
             if (down)
                 plugin.SendKeyDown(key);
@@ -196,24 +181,24 @@ namespace FreePIE.Core.Plugins
                 plugin.SendKeyUp(key);
         }
 
-        public bool getPressed(Key key)
+        public bool wasTapped(Key key)
         {
-            return plugin.WasKeyPressed(key);
+            return plugin.WasKeyTapped(key);
         }
 
-        public void setPressed(Key key)
+        public void tapKey(Key key)
         {
-            plugin.PressAndRelease(key);
+            plugin.TapKey(key);
         }
 
-        public void setPressed(Key key, bool state = true)
+        protected void tapKey(Key key, bool state = true)
         {
-            plugin.PressAndRelease(key, state);
+            plugin.TapKey(key, state);
         }
 
         public bool this[Key key]
         {
-            get => getKeyDown(key);
+            get => getKey(key);
             set { setKey(key, value); }
         }
     }
