@@ -8,27 +8,15 @@ using FreePIE.Core.Plugins.Strategies;
 
 namespace FreePIE.Core.Plugins
 {
-    
-    
-
     [GlobalType(Type = typeof (KeyboardGlobal))]
     public class KeyboardPlugin : Plugin
     {
-        
-
-        // Maps SharpDX key codes to dwFlag ExtendedKeyMap
-        private HashSet<ushort> extendedKeyMap = new HashSet<ushort>() { 
-            39, 44, 46, 48, 49, 50, 51, 70, 71, 76, 79, 80, 81, 82, 
-            84, 85, 86, 100, 105, 108, 109, 110, 112, 113, 114, 116, 
-            118, 119, 121, 125, 127, 128, 132, 133, 134, 135, 136, 
-            137, 138, 139, 140, 141, 142, 143 };
-
         private DirectInput DirectInputInstance = new DirectInput();
         private Keyboard KeyboardDevice;
         private KeyboardState KeyState = new KeyboardState();
-        private bool[] MyKeyDown = new bool[150];
-        private SetPressedStrategy<ushort> setKeyPressedStrategy;
-        private GetPressedStrategy<ushort> getKeyPressedStrategy;
+        private bool[] MyKeyDown = new bool[255];
+        private SetPressedStrategy<Key> setKeyPressedStrategy;
+        private GetPressedStrategy<Key> getKeyPressedStrategy;
 
         public override object CreateGlobal()
         {
@@ -54,8 +42,8 @@ namespace FreePIE.Core.Plugins
 
             KeyboardDevice.GetCurrentState(ref KeyState);
 
-            setKeyPressedStrategy = new SetPressedStrategy<ushort>(SendKeyDown, SendKeyUp);
-            getKeyPressedStrategy = new GetPressedStrategy<ushort>(IsKeyDown);
+            setKeyPressedStrategy = new SetPressedStrategy<Key>(SendKeyDown, SendKeyUp);
+            getKeyPressedStrategy = new GetPressedStrategy<Key>(IsKeyDown);
 
             OnStarted(this, new EventArgs());
             return null;
@@ -67,7 +55,7 @@ namespace FreePIE.Core.Plugins
             for (ushort i = 0; i < MyKeyDown.Length; i++)
             {
                 if (MyKeyDown[i])
-                    SendKeyUp(i);
+                    SendKeyUp((Key)i);
             }
 
             if (KeyboardDevice != null)
@@ -100,22 +88,28 @@ namespace FreePIE.Core.Plugins
             setKeyPressedStrategy.Do();
         }
 
-        public bool IsKeyDown(ushort keycode)
+        public bool IsKeyDown(Key keycode)
         {
             // Returns true if the key is currently being pressed
-            bool down = KeyState.IsPressed((SharpDX.DirectInput.Key)keycode) || MyKeyDown[keycode];
+            bool down = KeyState.IsPressed((SharpDX.DirectInput.Key)keycode) || MyKeyDown[(int)keycode];
             return down;
         }
 
-        public bool IsKeyUp(ushort keycode) => !IsKeyDown(keycode);
+        public bool IsKeyUp(Key keycode) => !IsKeyDown(keycode);
 
-        public bool WasKeyPressed(ushort key)
+        public bool WasKeyPressed(Key key)
         {
             return getKeyPressedStrategy.IsPressed(key);
         }
 
-        private MouseKeyIO.KEYBDINPUT KeyInput(ushort code, uint flag)
+        private MouseKeyIO.KEYBDINPUT KeyInput(Key key, uint flag)
         {
+            ushort code = (ushort)key;
+            if (code > 0x7f)
+            {
+                flag |= MouseKeyIO.KEYEVENTF_EXTENDEDKEY;
+            }
+
             var i = new MouseKeyIO.KEYBDINPUT();
             i.wVk = 0;
             i.wScan = code;
@@ -125,46 +119,40 @@ namespace FreePIE.Core.Plugins
             return i;
         }
 
-        public void SendKeyDown(ushort code)
+        public void SendKeyDown(Key code)
         {
-
-            if (!MyKeyDown[code])
+            if (!MyKeyDown[(int)code])
             {
-                MyKeyDown[code] = true;
+                MyKeyDown[(int)code] = true;
                 
                 var input = new MouseKeyIO.INPUT[1];
                 input[0].type = MouseKeyIO.INPUT_KEYBOARD;
-                input[0].ki = KeyInput(code, extendedKeyMap.Contains(code) ? MouseKeyIO.KEYEVENTF_EXTENDEDKEY : 0);
+                input[0].ki = KeyInput(code, 0);
 
                 MouseKeyIO.SendInput(1, input, Marshal.SizeOf(input[0].GetType()));
             }
         }
 
-        public void SendKeyUp(ushort code)
+        public void SendKeyUp(Key code)
         {
-
-            if (MyKeyDown[code])
+            if (MyKeyDown[(int)code])
             {                
-                MyKeyDown[code] = false;                
+                MyKeyDown[(int)code] = false;                
 
                 var input = new MouseKeyIO.INPUT[1];
                 input[0].type = MouseKeyIO.INPUT_KEYBOARD;
-                if (extendedKeyMap.Contains(code))
-                    input[0].ki = KeyInput(code, MouseKeyIO.KEYEVENTF_EXTENDEDKEY | MouseKeyIO.KEYEVENTF_KEYUP);
-                else
-                    input[0].ki = KeyInput(code, MouseKeyIO.KEYEVENTF_KEYUP);
+                input[0].ki = KeyInput(code, MouseKeyIO.KEYEVENTF_KEYUP);
 
                 MouseKeyIO.SendInput(1, input, Marshal.SizeOf(input[0].GetType()));
-
             }
         }
 
-        public void PressAndRelease(ushort keycode)
+        public void PressAndRelease(Key keycode)
         {
             setKeyPressedStrategy.Add(keycode);
         }
 
-        public void PressAndRelease(ushort keycode, bool state)
+        public void PressAndRelease(Key keycode, bool state)
         {
             setKeyPressedStrategy.Add(keycode, state);
         }
@@ -182,45 +170,45 @@ namespace FreePIE.Core.Plugins
 
         protected bool getKeyDown(Key key)
         {
-            return plugin.IsKeyDown((ushort)key);
+            return plugin.IsKeyDown(key);
         }
 
         public void setKeyDown(Key key)
         {
-            plugin.SendKeyDown((ushort)key);
+            plugin.SendKeyDown(key);
         }
 
         public bool getKeyUp(Key key)
         {
-            return plugin.IsKeyUp((ushort)key);
+            return plugin.IsKeyUp(key);
         }
 
         public void setKeyUp(Key key)
         {
-            plugin.SendKeyUp((ushort)key);
+            plugin.SendKeyUp(key);
         }
 
         protected void setKey(Key key, bool down)
         {
             if (down)
-                plugin.SendKeyDown((ushort)key);
+                plugin.SendKeyDown(key);
             else
-                plugin.SendKeyUp((ushort)key);
+                plugin.SendKeyUp(key);
         }
 
         public bool getPressed(Key key)
         {
-            return plugin.WasKeyPressed((ushort)key);
+            return plugin.WasKeyPressed(key);
         }
 
         public void setPressed(Key key)
         {
-            plugin.PressAndRelease((ushort)key);
+            plugin.PressAndRelease(key);
         }
 
         public void setPressed(Key key, bool state = true)
         {
-            plugin.PressAndRelease((ushort)key, state);
+            plugin.PressAndRelease(key, state);
         }
 
         public bool this[Key key]

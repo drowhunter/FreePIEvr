@@ -94,8 +94,8 @@
     <Compile Include="joystick\JoystickEventArgs.cs" />
     <Compile Include="joystick\JoystickGlobal.cs" />
     <Compile Include="joystick\JoystickPlugin.cs" />
-    <Compile Include="KeyboardPlugin.cs" />
-    <Compile Include="keyboard\SharpKeys.cs" />
+    <Compile Include="MouseKeyboard\KeyboardPlugin.cs" />
+    <Compile Include="MouseKeyboard\Key.cs" />
     <Compile Include="MemoryMapping\ArgumentExtension.cs" />
     <Compile Include="MemoryMapping\DisconnectedFreepieData.cs" />
     <Compile Include="MemoryMapping\MappedMemory.cs" />
@@ -106,8 +106,8 @@
     <Compile Include="MemoryMapping\WorkerProcess.cs" />
     <Compile Include="Midi\MidiStatus.cs" />
     <Compile Include="Midi\DataGlobal.cs" />
-    <Compile Include="MouseKeyIO.cs" />
-    <Compile Include="MousePlugin.cs" />
+    <Compile Include="MouseKeyboard\MouseKeyIO.cs" />
+    <Compile Include="MouseKeyboard\MousePlugin.cs" />
     <Compile Include="OpenTrackPlugin.cs" />
     <Compile Include="VRPlugin.cs" />
     <Compile Include="VR\Api.cs" />

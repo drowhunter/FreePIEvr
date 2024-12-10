@@ -2,7 +2,6 @@
 
 namespace FreePIE.Core.Plugins
 {
-
     [GlobalEnum]
     public enum Key
     {
