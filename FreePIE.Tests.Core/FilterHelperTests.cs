@@ -96,4 +96,165 @@ namespace FreePIE.Tests.Core
             Assert.AreEqual(9, y);
         }
     }
+
+    [TestClass]
+    public class When_giving_reversing_range : MapRangeTest
+    {
+        [TestInitialize]
+        public void Context()
+        {
+            x = 1;
+            xMin = 0;
+            xMax = 5;
+            yMin = 5;
+            yMax = 0;
+
+            Map(filterHelper.ensureMapRange);
+        }
+
+        [TestMethod]
+        
+        public void It_should_return_yMin_inverted()
+        {
+            Assert.AreEqual(4, y);
+        }
+    }
+
+    [TestClass]
+    public class When_giving_reversing_range2 : MapRangeTest
+    {
+        [TestInitialize]
+        public void Context()
+        {
+            x = 1;
+            xMin = 0;
+            xMax = 5;
+            yMin = 20;
+            yMax = 10;
+
+            Map(filterHelper.ensureMapRange);
+        }
+
+        [TestMethod]
+
+        public void It_should_return_yMin_inverted()
+        {
+            Assert.AreEqual(18, y);
+        }
+    }
+
+    [TestClass]
+    public class When_giving_reversing_range3 : MapRangeTest
+    {
+        [TestInitialize]
+        public void Context()
+        {
+            x = 1;
+            xMin = 0;
+            xMax = 5;
+            yMin = 10;
+            yMax = 20;
+
+            Map(filterHelper.ensureMapRange);
+        }
+
+        [TestMethod]
+
+        public void It_should_return_yMin_normally()
+        {
+            Assert.AreEqual(12, y);
+        }
+    }
+
+    [TestClass]
+    public class When_giving_reversing_range4 : MapRangeTest
+    {
+        [TestInitialize]
+        public void Context()
+        {
+            x = 4;
+            xMin = 5;
+            xMax = 0;
+            yMin = 10;
+            yMax = 20;
+
+            Map(filterHelper.ensureMapRange);
+        }
+
+        [TestMethod]
+
+        public void It_should_return_yMin_inverted()
+        {
+            Assert.AreEqual(12, y);
+        }
+    }
+
+    [TestClass]
+    public class When_giving_reversing_input_range5 : MapRangeTest
+    {
+        [TestInitialize]
+        public void Context()
+        {
+            x = 9;
+            xMin = 10;
+            xMax = 5;
+            yMin = 10;
+            yMax = 20;
+
+            Map(filterHelper.ensureMapRange);
+        }
+
+        [TestMethod]
+
+        public void It_should_return_yMin_inverted()
+        {
+            Assert.AreEqual(12, y);
+        }
+    }
+
+    [TestClass]
+    public class When_giving_reversing_input_range_with_negatives : MapRangeTest
+    {
+        [TestInitialize]
+        public void Context()
+        {
+            x = 0;
+            xMin = -10;
+            xMax = 10;
+            yMin = 10;
+            yMax = 20;
+
+            Map(filterHelper.ensureMapRange);
+        }
+
+        [TestMethod]
+
+        public void It_should_return_yMin_inverted()
+        {
+            Assert.AreEqual(15, y);
+        }
+    }
+
+    [TestClass]
+    public class When_giving_reversing_output_range_with_negatives : MapRangeTest
+    {
+        [TestInitialize]
+        public void Context()
+        {
+            x = 15;
+            xMin = 10;
+            xMax = 20;
+            yMin = 10;
+            yMax = -10;
+
+            Map(filterHelper.ensureMapRange);
+        }
+
+        [TestMethod]
+
+        public void It_should_return_zero()
+        {
+            Assert.AreEqual(0, y);
+        }
+    }
 }

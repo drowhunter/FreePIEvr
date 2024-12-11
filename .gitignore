@@ -31,6 +31,9 @@ VersionInfo.cs
 Output
 OutputTemp
 InstallerTemp
+Debug
+Release
+NPClient
 /Lib/OculusVR/Code/OculusSDK.7z
 /Lib/HEAD.zip
 /.vs/Freepie
@@ -96,3 +99,8 @@ InstallerTemp
 /Lib/OpenXR/Code/LibOVR/Win32
 /Lib/OpenXR/Code/LibOVR/Win64
 .vs
+.idea
+*.tlog
+*.log
+*.pdb
+*.obj

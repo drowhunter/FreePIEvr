@@ -1,5 +1,6 @@
 ﻿using System;
 using FreePIE.Core.Common.Events;
+using FreePIE.Core.Common.Extensions;
 using FreePIE.Core.Contracts;
 using FreePIE.Core.Model.Events;
 
@@ -31,6 +32,39 @@ namespace FreePIE.Core.ScriptEngine.Globals.ScriptHelpers
         public void watch(object value, string indexer)
         {
             eventAggregator.Publish(new WatchEvent(indexer, value));
+        }
+
+        public void multiWatch(object obj, params string[] properties)
+        {
+            if (obj == null)
+            {
+                return;
+            }
+
+            if (properties.Length == 0)
+            {
+                multiWatchExcept(obj);
+            }
+            else
+            {
+                foreach (var pair in obj.EnumerateRuntimeProperties(false, properties))
+                {
+                    watch(pair.Value, pair.Key);
+                }
+            }
+        }
+
+        public void multiWatchExcept(object obj,params string[] properties)
+        {
+            if (obj == null)
+            {
+                return;
+            }
+
+            foreach (var pair in obj.EnumerateRuntimeProperties(true, properties ))
+            {
+                watch(pair.Value, pair.Key);
+            }
         }
 
         public void notify(string message)
