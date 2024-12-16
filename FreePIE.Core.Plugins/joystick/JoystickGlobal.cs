@@ -44,6 +44,7 @@ namespace FreePIE.Core.Plugins.joystick
         public int sliders { get; set; }
     }
 
+    
     public class DpadGlobal
     {
         public bool up { get; set; }

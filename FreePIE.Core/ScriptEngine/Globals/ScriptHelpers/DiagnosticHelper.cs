@@ -33,6 +33,12 @@ namespace FreePIE.Core.ScriptEngine.Globals.ScriptHelpers
         [NeedIndexer]
         public void watch(object value, string indexer)
         {
+            
+            if(value != null && !IsSimple(value.GetType()))
+            {
+                watchObject(value, indexer);
+                return;
+            }
             eventAggregator.Publish(new WatchEvent(indexer, value));
         }
 
@@ -58,6 +64,19 @@ namespace FreePIE.Core.ScriptEngine.Globals.ScriptHelpers
                     watch(pair.Value, indexer + "." + pair.Key);
                 }
             }
+        }
+
+        bool IsSimple(Type type)
+        {
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                // nullable type, check if the nested type is simple.
+                return IsSimple(type.GetGenericArguments()[0]);
+            }
+            return type.IsPrimitive
+              || type.IsEnum
+              || type.Equals(typeof(string))
+              || type.Equals(typeof(decimal));
         }
 
         [NeedIndexer]
