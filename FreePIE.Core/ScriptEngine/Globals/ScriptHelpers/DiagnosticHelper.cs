@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+
 using FreePIE.Core.Common.Events;
 using FreePIE.Core.Common.Extensions;
 using FreePIE.Core.Contracts;
@@ -34,6 +36,7 @@ namespace FreePIE.Core.ScriptEngine.Globals.ScriptHelpers
             eventAggregator.Publish(new WatchEvent(indexer, value));
         }
 
+        [NeedIndexer]
         public void watchObject(object obj, params string[] properties)
         {
             if (obj == null)
@@ -41,29 +44,36 @@ namespace FreePIE.Core.ScriptEngine.Globals.ScriptHelpers
                 return;
             }
 
-            if (properties.Length == 0)
+            var args = properties.Take(properties.Length - 1).ToArray();
+            var indexer = properties[properties.Length - 1].Split(',')[0];
+
+            if (args.Length == 0)
             {
-                watchObjectExcept(obj);
+                watchExcept(obj, indexer);
             }
             else
             {
-                foreach (var pair in obj.EnumerateRuntimeProperties(false, properties))
+                foreach (var pair in obj.EnumerateRuntimeProperties(false, args))
                 {
-                    watch(pair.Value, pair.Key);
+                    watch(pair.Value, indexer + "." + pair.Key);
                 }
             }
         }
 
-        public void watchObjectExcept(object obj,params string[] properties)
+        [NeedIndexer]
+        public void watchExcept(object obj,params string[] properties)
         {
             if (obj == null)
             {
                 return;
             }
 
-            foreach (var pair in obj.EnumerateRuntimeProperties(true, properties ))
+            var args = properties.Take(properties.Length - 1).ToArray();
+            var indexer = properties[properties.Length - 1];
+
+            foreach (var pair in obj.EnumerateRuntimeProperties(true, args ))
             {
-                watch(pair.Value, pair.Key);
+                watch(pair.Value, indexer + "." + pair.Key);
             }
         }
 
