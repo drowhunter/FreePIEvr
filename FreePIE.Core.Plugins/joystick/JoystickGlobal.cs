@@ -13,74 +13,159 @@ namespace FreePIE.Core.Plugins.joystick
         public string name; public JoystickOffset offset; public ObjectProperties props;
     }
 
+    public enum AxisConfig
+    {
+        FullAxis,
+        FullAxisInverted,
+        HalfAxis,
+        HalfAxisInverted,
+        Raw,
+    }
+
+    public class JoyConfig
+    {
+        public AxisConfig x { get; set; }
+        public AxisConfig y { get; set; }
+        public AxisConfig z { get; set; }
+        public AxisConfig rotationX { get; set; } 
+        public AxisConfig rotationY { get; set; } 
+        public AxisConfig rotationZ { get; set; } 
+        public List<AxisConfig> sliders { get; set; } = new List<AxisConfig>();
+
+    }
+
+    public class JoyCount
+    {
+        public int povs { get; set; }
+        public int buttons { get; set; }
+        public int axes { get; set; }
+
+        public int sliders { get; set; }
+    }
+
+
     [Global(Name = "joystick")]
     public class JoystickGlobal : IDisposable
     {
 
         private readonly Joystick _joystick;
 
-        private JoystickState state;
-        internal JoystickState State
-        {
-            get { return state ?? (state = _joystick.GetCurrentState()); }
-        }
+        private JoystickState _state;
+        
+        //public JoystickState state => _state;
+        
+        //private Capabilities _caps => _joystick.Capabilities;
 
-        public event EventHandler<JoystickEventArgs> Updated;
-        public event EventHandler Started, Stopped;
+        //private int _numAxes => _joystick.Capabilities.AxeCount;
 
-        internal Capabilities caps { get { return _joystick.Capabilities; } }
+        //private int _numPovs => _joystick.Capabilities.PovCount;
 
-        internal int numButtons { get { return _joystick.Capabilities.ButtonCount; } }
+        private Dictionary<AxisConfig, (int min, int max)> _axisConfigValue;
 
-        internal int numAxes { get { return _joystick.Capabilities.AxeCount; } }
-
-        internal int numPovs { get { return _joystick.Capabilities.PovCount; } }
-
-        internal Dictionary<JoystickOffset, JoyProp> AxisInfo { get; }
-
-
-        private static List<JoystickOffset> joystickAxisOffsets = new List<JoystickOffset>() { JoystickOffset.X, JoystickOffset.Y, JoystickOffset.Z, JoystickOffset.RotationX, JoystickOffset.RotationY, JoystickOffset.RotationZ, JoystickOffset.Sliders0, JoystickOffset.Sliders1 };
-
+        //private static List<JoystickOffset> _joystickAxisOffsets = new List<JoystickOffset>() { JoystickOffset.X, JoystickOffset.Y, JoystickOffset.Z, JoystickOffset.RotationX, JoystickOffset.RotationY, JoystickOffset.RotationZ, JoystickOffset.Sliders0, JoystickOffset.Sliders1 };
+        //private Dictionary<JoystickOffset, JoyProp> _axisProperties { get; } = new Dictionary<JoystickOffset, JoyProp>();
 
         public JoystickGlobal(int index, Joystick joystick)
         {
             this._joystick = joystick;
 
+            _state = joystick.GetCurrentState();
+
             Debug.WriteLine("Found {0} \"{1}\"", joystick.Information.Type, joystick.Information.ProductName);
+            config = new JoyConfig() { sliders = _state.Sliders.Select(s => AxisConfig.FullAxis).ToList() };
 
-            buttons = new bool[numButtons];
+            buttons = new bool[joystick.Capabilities.ButtonCount];
 
-            AxisInfo = new Dictionary<JoystickOffset, JoyProp>();
-            for (int i = 0; i < joystickAxisOffsets.Count; i++)
+            _axisConfigValue = new Dictionary<AxisConfig, (int min, int max)>()
+            {
+                { AxisConfig.FullAxis, (-1, 1) },
+                { AxisConfig.FullAxisInverted, (1, -1) },
+                { AxisConfig.HalfAxis, (0, 1) },
+                { AxisConfig.HalfAxisInverted, (1, 0) }
+            };
+
+            
+
+            /*foreach(var offset in _joystickAxisOffsets)
             {
                 try
                 {
-                    var mightGoBoom = joystick.GetObjectInfoByName(joystickAxisOffsets[i].ToString());
-                    AxisInfo.Add(joystickAxisOffsets[i], new JoyProp { offset = joystickAxisOffsets[i], name = mightGoBoom.Name, props = joystick.GetObjectPropertiesById(mightGoBoom.ObjectId) });
+                    var info = joystick.GetObjectInfoByName(offset.ToString());
+                    _axisProperties.Add(offset, new JoyProp { offset = offset, name = info.Name, props = joystick.GetObjectPropertiesById(info.ObjectId) });
                 }
                 catch { }
             }
-          
-        }
-        
-        public void Dispose()
-        {
-            _joystick.Unacquire();
-            _joystick.Dispose();
-            Stopped?.Invoke(this, null);
-        }
+            */
 
-        public string name { get { return _joystick?.Information.ProductName ?? ""; } }
+        }
         
         internal void Update(params object[] args)
         {
-            state = _joystick.GetCurrentState();
+            _state = _joystick.GetCurrentState();
 
-            buttons = state.Buttons.Take(_joystick.Capabilities.ButtonCount).ToArray();
+            //count.sliders = new int[][] { _state.Sliders, _state.AccelerationSliders, _state.VelocitySliders, _state.ForceSliders }.Select(sliders => sliders.Length).Sum();
 
-            Updated?.Invoke(this, new JoystickEventArgs(state));
+            buttons = _state.Buttons.Take(count.buttons).ToArray();
+
+            Updated?.Invoke(this, new JoystickEventArgs(_state));
         }
 
+        
+
+        #region Visible Global Properties
+
+        public string name { get { return _joystick?.Information.ProductName ?? ""; } }
+
+        public JoyCount count => new JoyCount
+            {
+                povs = _joystick.Capabilities.PovCount,
+                buttons = _joystick.Capabilities.ButtonCount,
+                axes = _joystick.Capabilities.AxeCount,
+                sliders = _state.Sliders.Length//.Where(s => s != 0 ).Count()
+            };
+
+
+        public JoyConfig config;
+
+        /// <summary>
+        /// Events that are triggered when the joystick is updated
+        /// </summary>
+        public event EventHandler<JoystickEventArgs> Updated;
+
+        public event EventHandler Started, Stopped;
+
+
+        public double x => normalize(_state?.X??0, config.x );
+        public double y => normalize(_state?.Y ?? 0, config.y);
+        public double z => normalize(_state?.Z ?? 0, config.z);
+        public double rotationX => normalize(_state?.RotationX ?? 0, config.rotationX);
+        public double rotationY => normalize(_state?.RotationY ?? 0, config.rotationY);
+        public double rotationZ => normalize(_state?.RotationZ ?? 0, config.rotationZ); 
+            
+        
+
+        public bool[] buttons { get; private set; }
+
+        public double[] sliders
+        {
+            get { return _state.Sliders.Take(count.sliders).Select((s,i) => normalize(s, config.sliders[i])).ToArray(); }
+        }
+
+        public int[] pov
+        {
+            get
+            {
+                return _joystick.Capabilities.PovCount > 0 ? _state.PointOfViewControllers.Take(count.povs).Select(p =>
+                {
+                    var r = p > 0 ? p / 100 : p;
+                    return r;
+                }).ToArray() : new[] { -1, -1, -1, -1 };
+            }
+        }
+
+        #endregion
+
+        #region Private Methods
         private double mapRange(double x, double xMin, double xMax, double yMin, double yMax)
         {
             return yMin + (yMax - yMin) * (x - xMin) / (xMax - xMin);
@@ -91,74 +176,23 @@ namespace FreePIE.Core.Plugins.joystick
             return Math.Max(Math.Min(mapRange(x, xMin, xMax, yMin, yMax), Math.Max(yMin, yMax)), Math.Min(yMin, yMax));
         }
 
-        #region stuff
-
-
-
-
-        public float x
-        {
-            get 
-            {
-                return normalize(State.X, JoystickOffset.X);
-            }
-        }
-
-        public float y
-        {
-            get { return normalize(State.Y, JoystickOffset.Y); }
-        }
-
-        public float z
-        {
-            get { return normalize(State.Z, JoystickOffset.Z); }
-        }
-
-        public float rotationX
-        {
-            get { return normalize(State.RotationX, JoystickOffset.RotationX); }
-        }
-
-        public float rotationY
-        {
-            get { return normalize(State.RotationY, JoystickOffset.RotationZ); }
-        }
-
-        public float rotationZ
-        {
-            get { return normalize(State.RotationZ, JoystickOffset.RotationZ); }
-        }
-
         
-
-        public bool[] buttons { get; private set; }
-
-        public float[] sliders
+        private double normalize(int value, AxisConfig cfg )
         {
-            get { return State.Sliders.Select((s,i) => normalize(s, i == 0 ? JoystickOffset.Sliders0 : JoystickOffset.Sliders1 )).ToArray(); }
+            if(cfg == AxisConfig.Raw) 
+                return value;
+            
+            return ensureMapRange(value, 0, ushort.MaxValue, _axisConfigValue[cfg].min, _axisConfigValue[cfg].max);           
+            
         }
 
-        public int[] pov
+        void IDisposable.Dispose()
         {
-            get
-            {
-                return numPovs > 0 ? State.PointOfViewControllers.Select(p =>
-                {
-                    var r = p > 0 ? p / 100 : p;
-                    return r;
-                }).ToArray() : new[] { -1, -1, -1, -1 };
-            }
+            _joystick?.Unacquire();
+            _joystick?.Dispose();
+            Stopped?.Invoke(this, null);
         }
 
-        private float normalize(int value, JoystickOffset axis )
-        {
-            // Revisit this later if we want to make the output similar to GLovepie values between -1 and 1
-            //if (AxisInfo.TryGetValue(axis, out JoyProp p))
-            //{
-            //    return ensureMapRange(value, p.props.Range.Minimum, p.props.Range.Maximum, -1, 1);
-            //}
-            return value;
-        }
         #endregion
     }
 }

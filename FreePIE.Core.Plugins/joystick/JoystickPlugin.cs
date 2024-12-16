@@ -99,7 +99,7 @@ namespace FreePIE.Core.Plugins.joystick
                 }
                 finally
                 {
-                    j.Dispose();
+                    ((IDisposable)j).Dispose();                   
                 }
             }
 
