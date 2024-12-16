@@ -13,7 +13,8 @@ namespace FreePIE.Core.Plugins.joystick
         public string name; public JoystickOffset offset; public ObjectProperties props;
     }
 
-    public enum AxisConfig
+    [GlobalEnum]
+    public enum axisConfig
     {
         FullAxis,
         FullAxisInverted,
@@ -24,13 +25,13 @@ namespace FreePIE.Core.Plugins.joystick
 
     public class JoyConfig
     {
-        public AxisConfig x { get; set; }
-        public AxisConfig y { get; set; }
-        public AxisConfig z { get; set; }
-        public AxisConfig rotationX { get; set; } 
-        public AxisConfig rotationY { get; set; } 
-        public AxisConfig rotationZ { get; set; } 
-        public List<AxisConfig> sliders { get; set; } = new List<AxisConfig>();
+        public axisConfig x { get; set; }
+        public axisConfig y { get; set; }
+        public axisConfig z { get; set; }
+        public axisConfig rotationX { get; set; } 
+        public axisConfig rotationY { get; set; } 
+        public axisConfig rotationZ { get; set; } 
+        public List<axisConfig> sliders { get; set; } = new List<axisConfig>();
 
     }
 
@@ -60,7 +61,7 @@ namespace FreePIE.Core.Plugins.joystick
 
         //private int _numPovs => _joystick.Capabilities.PovCount;
 
-        private Dictionary<AxisConfig, (int min, int max)> _axisConfigValue;
+        private Dictionary<axisConfig, (int min, int max)> _axisConfigValue;
 
         //private static List<JoystickOffset> _joystickAxisOffsets = new List<JoystickOffset>() { JoystickOffset.X, JoystickOffset.Y, JoystickOffset.Z, JoystickOffset.RotationX, JoystickOffset.RotationY, JoystickOffset.RotationZ, JoystickOffset.Sliders0, JoystickOffset.Sliders1 };
         //private Dictionary<JoystickOffset, JoyProp> _axisProperties { get; } = new Dictionary<JoystickOffset, JoyProp>();
@@ -72,16 +73,16 @@ namespace FreePIE.Core.Plugins.joystick
             _state = joystick.GetCurrentState();
 
             Debug.WriteLine("Found {0} \"{1}\"", joystick.Information.Type, joystick.Information.ProductName);
-            config = new JoyConfig() { sliders = _state.Sliders.Select(s => AxisConfig.FullAxis).ToList() };
+            config = new JoyConfig() { sliders = _state.Sliders.Select(s => axisConfig.FullAxis).ToList() };
 
             buttons = new bool[joystick.Capabilities.ButtonCount];
 
-            _axisConfigValue = new Dictionary<AxisConfig, (int min, int max)>()
+            _axisConfigValue = new Dictionary<axisConfig, (int min, int max)>()
             {
-                { AxisConfig.FullAxis, (-1, 1) },
-                { AxisConfig.FullAxisInverted, (1, -1) },
-                { AxisConfig.HalfAxis, (0, 1) },
-                { AxisConfig.HalfAxisInverted, (1, 0) }
+                { axisConfig.FullAxis, (-1, 1) },
+                { axisConfig.FullAxisInverted, (1, -1) },
+                { axisConfig.HalfAxis, (0, 1) },
+                { axisConfig.HalfAxisInverted, (1, 0) }
             };
 
             
@@ -125,7 +126,8 @@ namespace FreePIE.Core.Plugins.joystick
             };
 
 
-        public JoyConfig config;
+        public JoyConfig config { get; private set; }
+
 
         /// <summary>
         /// Events that are triggered when the joystick is updated
@@ -177,9 +179,9 @@ namespace FreePIE.Core.Plugins.joystick
         }
 
         
-        private double normalize(int value, AxisConfig cfg )
+        private double normalize(int value, axisConfig cfg )
         {
-            if(cfg == AxisConfig.Raw) 
+            if(cfg == axisConfig.Raw) 
                 return value;
             
             return ensureMapRange(value, 0, ushort.MaxValue, _axisConfigValue[cfg].min, _axisConfigValue[cfg].max);           
