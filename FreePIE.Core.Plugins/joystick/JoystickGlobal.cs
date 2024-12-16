@@ -44,6 +44,32 @@ namespace FreePIE.Core.Plugins.joystick
         public int sliders { get; set; }
     }
 
+    public class DpadGlobal
+    {
+        public bool up { get; set; }
+        public bool down { get; set; }
+        public bool left { get; set; }
+        public bool right { get; set; }
+
+
+        //public DpadGlobal() {  }
+
+        //internal void update(int pov)
+        public DpadGlobal(int pov = -1)
+        {
+            if (pov >= 0)
+            {
+                if(pov >= 360)
+                    pov = pov % 360;
+
+                up = pov == 0 || pov == 45;
+                down = pov == 135 || pov == 180;
+                left = pov == 225 || pov == 270;
+                right = pov == 45 || pov == 90;
+            }
+        }
+    }
+
 
     [Global(Name = "joystick")]
     public class JoystickGlobal : IDisposable
@@ -76,6 +102,7 @@ namespace FreePIE.Core.Plugins.joystick
                 { axisConfig.HalfAxisInverted, (1, 0) }
             }; 
         }
+
         
         internal void Update(params object[] args)
         {
@@ -135,6 +162,12 @@ namespace FreePIE.Core.Plugins.joystick
                 }).ToArray() : new[] { -1, -1, -1, -1 };
             }
         }
+
+
+        public DpadGlobal[] dpad => pov.Select(p => new DpadGlobal(p)).ToArray();
+
+
+
 
         #endregion
 
