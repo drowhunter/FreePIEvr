@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
+
 using FreePIE.Core.Common;
 using FreePIE.Core.Contracts;
 using FreePIE.Core.Model.Events;
@@ -184,7 +188,7 @@ namespace FreePIE.Core.ScriptEngine.Python
 
             return script;
         }
-
+ 
         private string ExtractArguments(string script, int start)
         {
             int parenthesesCount = 0;

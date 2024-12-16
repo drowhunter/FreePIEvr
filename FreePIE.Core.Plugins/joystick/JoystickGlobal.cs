@@ -55,17 +55,8 @@ namespace FreePIE.Core.Plugins.joystick
         
         //public JoystickState state => _state;
         
-        //private Capabilities _caps => _joystick.Capabilities;
-
-        //private int _numAxes => _joystick.Capabilities.AxeCount;
-
-        //private int _numPovs => _joystick.Capabilities.PovCount;
-
         private Dictionary<axisConfig, (int min, int max)> _axisConfigValue;
-
-        //private static List<JoystickOffset> _joystickAxisOffsets = new List<JoystickOffset>() { JoystickOffset.X, JoystickOffset.Y, JoystickOffset.Z, JoystickOffset.RotationX, JoystickOffset.RotationY, JoystickOffset.RotationZ, JoystickOffset.Sliders0, JoystickOffset.Sliders1 };
-        //private Dictionary<JoystickOffset, JoyProp> _axisProperties { get; } = new Dictionary<JoystickOffset, JoyProp>();
-
+        
         public JoystickGlobal(int index, Joystick joystick)
         {
             this._joystick = joystick;
@@ -83,28 +74,12 @@ namespace FreePIE.Core.Plugins.joystick
                 { axisConfig.FullAxisInverted, (1, -1) },
                 { axisConfig.HalfAxis, (0, 1) },
                 { axisConfig.HalfAxisInverted, (1, 0) }
-            };
-
-            
-
-            /*foreach(var offset in _joystickAxisOffsets)
-            {
-                try
-                {
-                    var info = joystick.GetObjectInfoByName(offset.ToString());
-                    _axisProperties.Add(offset, new JoyProp { offset = offset, name = info.Name, props = joystick.GetObjectPropertiesById(info.ObjectId) });
-                }
-                catch { }
-            }
-            */
-
+            }; 
         }
         
         internal void Update(params object[] args)
         {
             _state = _joystick.GetCurrentState();
-
-            //count.sliders = new int[][] { _state.Sliders, _state.AccelerationSliders, _state.VelocitySliders, _state.ForceSliders }.Select(sliders => sliders.Length).Sum();
 
             buttons = _state.Buttons.Take(count.buttons).ToArray();
 
@@ -128,10 +103,6 @@ namespace FreePIE.Core.Plugins.joystick
 
         public JoyConfig config { get; private set; }
 
-
-        /// <summary>
-        /// Events that are triggered when the joystick is updated
-        /// </summary>
         public event EventHandler<JoystickEventArgs> Updated;
 
         public event EventHandler Started, Stopped;
