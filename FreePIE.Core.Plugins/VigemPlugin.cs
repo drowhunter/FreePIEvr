@@ -11,6 +11,10 @@ namespace FreePIE.Core.Plugins
     [GlobalType(Type = typeof(VigemGlobal))]
     public class VigemPlugin : Plugin
     {
+        public event RumbleEvent onRumble;
+
+        public delegate void RumbleEvent(byte largeMotor, byte smallMotor, byte led);
+
         public ViGEmClient Client { get; private set; }
         public string ErrorMessage { get; private set; }
 
@@ -105,7 +109,13 @@ namespace FreePIE.Core.Plugins
                 return;
 
             XBoxController = Client.CreateXbox360Controller();
+            XBoxController.FeedbackReceived += controller_FeedbackReceived;
             XBoxController.Connect();
+        }
+
+        private void controller_FeedbackReceived(object sender, Xbox360FeedbackReceivedEventArgs e)
+        {
+            onRumble?.Invoke(e.LargeMotor, e.SmallMotor, e.LedNumber);
         }
     }
 
