@@ -51,22 +51,18 @@ namespace FreePIE.Core.Plugins.joystick
         public bool down { get; set; }
         public bool left { get; set; }
         public bool right { get; set; }
-
-
-        //public DpadGlobal() {  }
-
-        //internal void update(int pov)
+        
         public DpadGlobal(int pov = -1)
         {
             if (pov >= 0)
             {
-                if(pov >= 360)
+                if (pov >= 360)
                     pov = pov % 360;
 
-                up = pov == 0 || pov == 45;
-                down = pov == 135 || pov == 180;
-                left = pov == 225 || pov == 270;
-                right = pov == 45 || pov == 90;
+                up = pov >= 315 || pov < 45;
+                down = pov >= 135 && pov < 225;
+                left = pov >= 225 && pov < 315;
+                right = pov >= 45 && pov < 135;
             }
         }
     }
@@ -80,9 +76,13 @@ namespace FreePIE.Core.Plugins.joystick
 
         private JoystickState _state;
         
-        //public JoystickState state => _state;
-        
-        private Dictionary<axisConfig, (int min, int max)> _axisConfigValue;
+        private static Dictionary<axisConfig, (int min, int max)> _axisConfigValue = _axisConfigValue = new Dictionary<axisConfig, (int min, int max)>()
+            {
+                { axisConfig.FullAxis, (-1, 1) },
+                { axisConfig.FullAxisInverted, (1, -1) },
+                { axisConfig.HalfAxis, (0, 1) },
+                { axisConfig.HalfAxisInverted, (1, 0) }
+            }; 
         
         public JoystickGlobal(int index, Joystick joystick)
         {
@@ -91,18 +91,32 @@ namespace FreePIE.Core.Plugins.joystick
             _state = joystick.GetCurrentState();
 
             Debug.WriteLine("Found {0} \"{1}\"", joystick.Information.Type, joystick.Information.ProductName);
+
+            // Initialize Properties
+
+            name = joystick.Information.ProductName;
             config = new JoyConfig() { sliders = _state.Sliders.Select(s => axisConfig.FullAxis).ToList() };
 
             buttons = new bool[joystick.Capabilities.ButtonCount];
 
-            _axisConfigValue = new Dictionary<axisConfig, (int min, int max)>()
+            count = new JoyCount
             {
-                { axisConfig.FullAxis, (-1, 1) },
-                { axisConfig.FullAxisInverted, (1, -1) },
-                { axisConfig.HalfAxis, (0, 1) },
-                { axisConfig.HalfAxisInverted, (1, 0) }
-            }; 
+                povs = _joystick.Capabilities.PovCount,
+                buttons = _joystick.Capabilities.ButtonCount,
+                axes = _joystick.Capabilities.AxeCount,
+                sliders = _state.Sliders.Length
+            };
+
+            if (count.povs > 0)
+                _state.PointOfViewControllers.Take(count.povs).Select(p => p > 0 ? p / 100 : p).ToArray();
+            else
+                pov = new[] { -1, -1, -1, -1 };
+
+            sliders = _state.Sliders.Select((s, i) => normalize(s, config.sliders[i])).ToArray();
+
         }
+
+        
 
         
         internal void Update(params object[] args)
@@ -111,6 +125,16 @@ namespace FreePIE.Core.Plugins.joystick
 
             buttons = _state.Buttons.Take(count.buttons).ToArray();
 
+            for (var i = 0; i < _state.Sliders.Length; i++)
+            {
+                sliders[i] = normalize(_state.Sliders[i], config.sliders[i]);
+            }
+
+            for (var i = 0; i < count.povs; i++)
+            {
+                pov[i] = _state.PointOfViewControllers[i] > 0 ? _state.PointOfViewControllers[i] / 100 : _state.PointOfViewControllers[i];
+            }
+
             Updated?.Invoke(this, new JoystickEventArgs(_state));
         }
 
@@ -118,15 +142,9 @@ namespace FreePIE.Core.Plugins.joystick
 
         #region Visible Global Properties
 
-        public string name { get { return _joystick?.Information.ProductName ?? ""; } }
+        public string name { get; private set; }
 
-        public JoyCount count => new JoyCount
-            {
-                povs = _joystick.Capabilities.PovCount,
-                buttons = _joystick.Capabilities.ButtonCount,
-                axes = _joystick.Capabilities.AxeCount,
-                sliders = _state.Sliders.Length//.Where(s => s != 0 ).Count()
-            };
+        public JoyCount count { get; private set; }
 
 
         public JoyConfig config { get; private set; }
@@ -136,38 +154,24 @@ namespace FreePIE.Core.Plugins.joystick
         public event EventHandler Started, Stopped;
 
 
-        public double x => normalize(_state?.X??0, config.x );
+        public double x => normalize(_state?.X ?? 0, config.x );
         public double y => normalize(_state?.Y ?? 0, config.y);
         public double z => normalize(_state?.Z ?? 0, config.z);
-        public double rotationX => normalize(_state?.RotationX ?? 0, config.rotationX);
-        public double rotationY => normalize(_state?.RotationY ?? 0, config.rotationY);
-        public double rotationZ => normalize(_state?.RotationZ ?? 0, config.rotationZ); 
-            
-        
+        public double rotationX => normalize(_state.RotationX, config.rotationX);
+        public double rotationY => normalize(_state.RotationY, config.rotationY);
+        public double rotationZ => normalize(_state.RotationZ, config.rotationZ);                    
 
         public bool[] buttons { get; private set; }
 
-        public double[] sliders
-        {
-            get { return _state.Sliders.Take(count.sliders).Select((s,i) => normalize(s, config.sliders[i])).ToArray(); }
-        }
+        public double[] sliders { get; private set; }
 
-        public int[] pov
-        {
-            get
-            {
-                return _joystick.Capabilities.PovCount > 0 ? _state.PointOfViewControllers.Take(count.povs).Select(p =>
-                {
-                    var r = p > 0 ? p / 100 : p;
-                    return r;
-                }).ToArray() : new[] { -1, -1, -1, -1 };
-            }
-        }
-
+        /// <summary>
+        /// Returns -1 of no direction is pressed, otherwise returns the direction in degrees
+        /// </summary>
+        public int[] pov { get; private set; }
+        
 
         public DpadGlobal[] dpad => pov.Select(p => new DpadGlobal(p)).ToArray();
-
-
 
 
         #endregion
@@ -186,7 +190,7 @@ namespace FreePIE.Core.Plugins.joystick
         
         private double normalize(int value, axisConfig cfg )
         {
-            if(cfg == axisConfig.Raw) 
+            if (cfg == axisConfig.Raw) 
                 return value;
             
             return ensureMapRange(value, 0, ushort.MaxValue, _axisConfigValue[cfg].min, _axisConfigValue[cfg].max);           
