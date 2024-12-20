@@ -32,9 +32,8 @@ namespace FreePIE.Core.ScriptEngine.Globals.ScriptHelpers
 
         [NeedIndexer]
         public void watch(object value, string indexer)
-        {
-            
-            if(value != null && !IsSimple(value.GetType()))
+        {            
+            if (value != null && !IsSimple(value.GetType()))
             {
                 watchObject(value, indexer);
                 return;
