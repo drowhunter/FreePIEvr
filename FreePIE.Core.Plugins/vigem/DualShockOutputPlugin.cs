@@ -90,17 +90,7 @@ namespace FreePIE.Core.Plugins.vigem
             set => controller.SetButtonState(DualShock4Button.Triangle, value);
         }
 
-        public bool L2
-        {
-            get => (buttons & DualShock4Button.ShoulderLeft.Value) != 0;
-            set => controller.SetButtonState(DualShock4Button.ShoulderLeft, value);
-        }
-
-        public bool R2
-        {
-            get => (buttons & DualShock4Button.ShoulderRight.Value) != 0;
-            set => controller.SetButtonState(DualShock4Button.ShoulderRight, value);
-        }
+       
 
         public bool options
         {
@@ -168,24 +158,29 @@ namespace FreePIE.Core.Plugins.vigem
         /// <summary>
         /// Acceptable values range 0 - 1
         /// </summary>
-        public double L1
+        public double L2
         {
             get => controller.LeftTrigger / 255.0;
-            set
-            {
-                if (isBetween(value, 0, 1))
-                {
-                    var v = (byte)Maths.EnsureMapRange(value, 0, 1, 0, 255);
-                    controller.SetSliderValue(DualShock4Slider.LeftTrigger, v);
-                }
-            }
+            set => controller.SetSliderValue(DualShock4Slider.LeftTrigger, (byte)Maths.EnsureMapRange(value, 0, 1, 0, 255));
+
         }
 
-
-        public double R1
+        public double R2
         {
             get => controller.RightTrigger / 255.0;
             set => controller.SetSliderValue(DualShock4Slider.RightTrigger, (byte)Maths.EnsureMapRange(value, 0, 1, 0, 255));
+        }
+
+        public bool L1
+        {
+            get => (buttons & DualShock4Button.ShoulderLeft.Value) != 0;
+            set => controller.SetButtonState(DualShock4Button.ShoulderLeft, value);
+        }
+
+        public bool R1
+        {
+            get => (buttons & DualShock4Button.ShoulderRight.Value) != 0;
+            set => controller.SetButtonState(DualShock4Button.ShoulderRight, value);
         }
 
         public double leftStickX
