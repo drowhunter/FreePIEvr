@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+
+using FreePIE.Core.Common;
 using FreePIE.Core.Contracts;
 using FreePIE.Core.ScriptEngine.Globals.ScriptHelpers.Strategies;
 
@@ -89,34 +91,14 @@ namespace FreePIE.Core.ScriptEngine.Globals.ScriptHelpers
             return strategy.Out;
         }
 
-        public double deadband(double x, double deadZone, double minY, double maxY)
-        {
-            var scaled = ensureMapRange(x, minY, maxY, -1, 1);
-            var y = 0d;
+        public double deadband(double x, double deadZone, double minY, double maxY) => Maths.Deadband(x, deadZone, minY, maxY);
+        
 
-            if (Math.Abs(scaled) > deadZone)
-                y = ensureMapRange(Math.Abs(scaled), deadZone, 1, 0, 1) * Math.Sign(x);
+        public double deadband(double x, double deadZone) => Maths.Deadband(x, deadZone);
 
-            return ensureMapRange(y, -1, 1, minY, maxY);
-        }
+        public double mapRange(double x, double xMin, double xMax, double yMin, double yMax) => Maths.MapRange(x, xMin, xMax, yMin, yMax);
 
-        public double deadband(double x, double deadZone)
-        {
-            if (Math.Abs(x) >= Math.Abs(deadZone))
-                return x;
-
-            return 0;
-        }
-
-        public double mapRange(double x, double xMin, double xMax, double yMin, double yMax)
-        {
-            return yMin + (yMax - yMin)*(x - xMin)/(xMax - xMin);
-        }
-
-        public double ensureMapRange(double x, double xMin, double xMax, double yMin, double yMax)
-        {
-            return Math.Max(Math.Min(mapRange(x, xMin, xMax, yMin, yMax), Math.Max(yMin, yMax)), Math.Min(yMin, yMax));
-        }
+        public double ensureMapRange(double x, double xMin, double xMax, double yMin, double yMax) => Maths.EnsureMapRange(x, xMin, xMax, yMin, yMax);
 
         [NeedIndexer]
         public bool stopWatch(bool state, int milliseconds, string indexer)
