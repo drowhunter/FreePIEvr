@@ -158,6 +158,10 @@
       <Project>{58285BD6-810D-4BBD-8249-230C3B0AC76F}</Project>
       <Name>FreePIE.Core.Contracts</Name>
     </ProjectReference>
+    <ProjectReference Include="..\FreePIE.Core\FreePIE.Core.csproj">
+      <Project>{BCF7160F-9CB9-46E5-91CA-EE15E1D5ED54}</Project>
+      <Name>FreePIE.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Lib\ViGEmClient\ViGEmClient.NET.csproj">
       <Project>{82c454a9-bfd0-4d40-bec2-d6f6dcc0af07}</Project>
       <Name>ViGEmClient.NET</Name>
