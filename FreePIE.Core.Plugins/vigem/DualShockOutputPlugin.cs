@@ -7,6 +7,7 @@ using FreePIE.Core.Plugins.Globals;
 using Nefarius.ViGEm.Client.Targets.DualShock4;
 
 using Nefarius.ViGEm.Client.Targets;
+using FreePIE.Core.Common;
 
 namespace FreePIE.Core.Plugins.vigem
 {
@@ -174,7 +175,7 @@ namespace FreePIE.Core.Plugins.vigem
             {
                 if (isBetween(value, 0, 1))
                 {
-                    var v = (byte)ensureMapRange(value, 0, 1, 0, 255);
+                    var v = (byte)Maths.EnsureMapRange(value, 0, 1, 0, 255);
                     controller.SetSliderValue(DualShock4Slider.LeftTrigger, v);
                 }
             }
@@ -184,33 +185,33 @@ namespace FreePIE.Core.Plugins.vigem
         public double R1
         {
             get => controller.RightTrigger / 255.0;
-            set => controller.SetSliderValue(DualShock4Slider.RightTrigger, (byte)ensureMapRange(value, 0, 1, 0, 255));
+            set => controller.SetSliderValue(DualShock4Slider.RightTrigger, (byte)Maths.EnsureMapRange(value, 0, 1, 0, 255));
         }
 
         public double leftStickX
         {
-            get => mapRange(controller.LeftThumbX, 0, 255, -1, 1);
-            set => controller.SetAxisValue(DualShock4Axis.LeftThumbX, (byte)ensureMapRange(value, -1, 1, 0, 255));
+            get => Maths.EnsureMapRange(controller.LeftThumbX, 0, 255, -1, 1);
+            set => controller.SetAxisValue(DualShock4Axis.LeftThumbX, (byte)Maths.EnsureMapRange(value, -1, 1, 0, 255));
         }
 
         public double leftStickY
         {
-            get => -mapRange(controller.LeftThumbY, 0, 255, -1, 1);
-            set => controller.SetAxisValue(DualShock4Axis.LeftThumbY, (byte)ensureMapRange(value, 1, -1, 0, 255));
+            get => -Maths.EnsureMapRange(controller.LeftThumbY, 0, 255, -1, 1);
+            set => controller.SetAxisValue(DualShock4Axis.LeftThumbY, (byte)Maths.EnsureMapRange(value, 1, -1, 0, 255));
         }
 
         public double rightStickX
         {
-            get => mapRange(controller.RightThumbX, 0, 255, -1, 1);
-            set => controller.SetAxisValue(DualShock4Axis.RightThumbX, (byte)ensureMapRange(value, -1, 1, 0, 255));
+            get => Maths.EnsureMapRange(controller.RightThumbX, 0, 255, -1, 1);
+            set => controller.SetAxisValue(DualShock4Axis.RightThumbX, (byte)Maths.EnsureMapRange(value, -1, 1, 0, 255));
 
         }
 
 
         public double rightStickY
         {
-            get => -mapRange(controller.RightThumbY, 0, 255, -1, 1);
-            set => controller.SetAxisValue(DualShock4Axis.RightThumbY, (byte)ensureMapRange(value, 1, -1, 0, 255));
+            get => -Maths.EnsureMapRange(controller.RightThumbY, 0, 255, -1, 1);
+            set => controller.SetAxisValue(DualShock4Axis.RightThumbY, (byte)Maths.EnsureMapRange(value, 1, -1, 0, 255));
         }
 
 

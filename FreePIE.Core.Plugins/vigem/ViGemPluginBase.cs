@@ -1,12 +1,7 @@
-﻿using System;
+﻿using Nefarius.ViGEm.Client;
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-
-using FreePIE.Core.Contracts;
-
-using Nefarius.ViGEm.Client;
-using Nefarius.ViGEm.Client.Targets;
-using Nefarius.ViGEm.Client.Targets.DualShock4;
 
 namespace FreePIE.Core.Plugins.vigem
 {
@@ -129,15 +124,6 @@ namespace FreePIE.Core.Plugins.vigem
             }
         }
 
-        protected double mapRange(double x, double xMin, double xMax, double yMin, double yMax)
-        {
-            return yMin + (yMax - yMin) * (x - xMin) / (xMax - xMin);
-        }
-
-        protected double ensureMapRange(double x, double xMin, double xMax, double yMin, double yMax)
-        {
-            return Math.Max(Math.Min(((x - xMin) / (xMax - xMin)) * (yMax - yMin) + yMin, Math.Max(yMin, yMax)), Math.Min(yMin, yMax));
-        }
 
         internal abstract void Disconnect();
 
