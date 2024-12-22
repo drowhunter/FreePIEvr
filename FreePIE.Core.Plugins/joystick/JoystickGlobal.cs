@@ -109,9 +109,9 @@ namespace FreePIE.Core.Plugins.joystick
             };
 
             if (count.povs > 0)
-                _state.PointOfViewControllers.Take(count.povs).Select(p => p > 0 ? p / 100 : p).ToArray();
+                pov = _state.PointOfViewControllers.Take(count.povs).Select(p => p > 0 ? p / 100 : p).ToArray();
             else
-                pov = new[] { -1, -1, -1, -1 };
+                pov = new int[0];
 
             sliders = _state.Sliders.Select((s, i) => normalize(s, config.sliders[i])).ToArray();
 
