@@ -34,7 +34,7 @@ namespace FreePIE.Core.ScriptEngine.Globals.ScriptHelpers
             eventAggregator.Publish(new WatchEvent(indexer, value));
         }
 
-        public void multiWatch(object obj, params string[] properties)
+        public void watchObject(object obj, params string[] properties)
         {
             if (obj == null)
             {
@@ -43,7 +43,7 @@ namespace FreePIE.Core.ScriptEngine.Globals.ScriptHelpers
 
             if (properties.Length == 0)
             {
-                multiWatchExcept(obj);
+                watchObjectExcept(obj);
             }
             else
             {
@@ -54,7 +54,7 @@ namespace FreePIE.Core.ScriptEngine.Globals.ScriptHelpers
             }
         }
 
-        public void multiWatchExcept(object obj,params string[] properties)
+        public void watchObjectExcept(object obj,params string[] properties)
         {
             if (obj == null)
             {
