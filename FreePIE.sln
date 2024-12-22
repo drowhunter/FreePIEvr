@@ -43,7 +43,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{40AC54
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{4C8630F5-412F-47A2-86DC-9356640C209E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{4C8630F5-412F-47A2-86DC-9356640C209E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViGEmClient.NET", "Lib\ViGEmClient\ViGEmClient.NET.csproj", "{82C454A9-BFD0-4D40-BEC2-D6F6DCC0AF07}"
 EndProject

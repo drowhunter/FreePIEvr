@@ -1,4 +1,5 @@
-﻿using FreePIE.Core.Contracts;
+﻿using FreePIE.Core.Common;
+using FreePIE.Core.Contracts;
 
 using SharpDX.DirectInput;
 using System;
@@ -177,15 +178,7 @@ namespace FreePIE.Core.Plugins.joystick
         #endregion
 
         #region Private Methods
-        private double mapRange(double x, double xMin, double xMax, double yMin, double yMax)
-        {
-            return yMin + (yMax - yMin) * (x - xMin) / (xMax - xMin);
-        }
-
-        private double ensureMapRange(double x, double xMin, double xMax, double yMin, double yMax)
-        {
-            return Math.Max(Math.Min(mapRange(x, xMin, xMax, yMin, yMax), Math.Max(yMin, yMax)), Math.Min(yMin, yMax));
-        }
+        
 
         
         private double normalize(int value, axisConfig cfg )
@@ -193,7 +186,7 @@ namespace FreePIE.Core.Plugins.joystick
             if (cfg == axisConfig.Raw) 
                 return value;
             
-            return ensureMapRange(value, 0, ushort.MaxValue, _axisConfigValue[cfg].min, _axisConfigValue[cfg].max);           
+            return Maths.EnsureMapRange(value, 0, ushort.MaxValue, _axisConfigValue[cfg].min, _axisConfigValue[cfg].max);           
             
         }
 
