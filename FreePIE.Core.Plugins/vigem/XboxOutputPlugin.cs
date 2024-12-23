@@ -162,7 +162,7 @@ namespace FreePIE.Core.Plugins.vigem
 
         public double leftStickX
         {
-            get => controller.LeftThumbX / controller.LeftThumbX < 0 ? 32768.0 : 32767.0;
+            get => controller.LeftThumbX / (controller.LeftThumbX < 0 ? 32768.0 : 32767.0);
             set => controller.SetAxisValue(Xbox360Axis.LeftThumbX, (short)Maths.EnsureMapRange(value, -1, 1, -32768, 32767));
         }
 
@@ -170,20 +170,20 @@ namespace FreePIE.Core.Plugins.vigem
 
         public double leftStickY
         {
-            get => controller.LeftThumbY / controller.LeftThumbY < 0 ? 32768.0 : 32767.0;
+            get => controller.LeftThumbY / (controller.LeftThumbY < 0 ? 32768.0 : 32767.0);
             set => controller.SetAxisValue(Xbox360Axis.LeftThumbY, (short)Maths.EnsureMapRange(value, -1, 1, -32768, 32767));
         }
 
         public double rightStickX
         {
-            get => controller.RightThumbX / controller.RightThumbX < 0 ? 32768.0 : 32767.0;            
+            get => controller.RightThumbX / (controller.RightThumbX < 0 ? 32768.0 : 32767.0);            
             set => controller.SetAxisValue(Xbox360Axis.RightThumbX, (short)Maths.EnsureMapRange(value, -1, 1, -32768, 32767));
         }
 
 
         public double rightStickY
         {
-            get => controller.RightThumbY / controller.RightThumbY < 0 ? 32768.0 : 32767.0;   
+            get => controller.RightThumbY / (controller.RightThumbY < 0 ? 32768.0 : 32767.0);   
             set => controller.SetAxisValue(Xbox360Axis.RightThumbY, (short)Maths.EnsureMapRange(value, -1, 1, -32768, 32767));
         }
 
