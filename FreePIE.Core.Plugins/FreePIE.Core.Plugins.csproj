@@ -88,6 +88,7 @@
     <Compile Include="ComDevicePlugin.cs" />
     <Compile Include="FreePieIOPlugin.cs" />
     <Compile Include="Globals\GlobalIndexer.cs" />
+    <Compile Include="joystick\JoyConfig.cs" />
     <Compile Include="joystick\JoystickEventArgs.cs" />
     <Compile Include="joystick\JoystickGlobal.cs" />
     <Compile Include="joystick\JoystickPlugin.cs" />
