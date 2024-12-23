@@ -165,6 +165,9 @@ namespace FreePIE.Core.Plugins.vigem
 
         }
 
+        /// <summary>
+        /// Acceptable values range 0 - 1
+        /// </summary>
         public double R2
         {
             get => controller.RightTrigger / 255.0;
@@ -248,22 +251,15 @@ namespace FreePIE.Core.Plugins.vigem
 
         internal override void Disconnect()
         {
-            if (controller != null)
-            {
-                controller.Disconnect();
-            }
+            controller?.Disconnect();            
         }
 
         
 
         public void Dispose()
         {
-            if (controller != null)
-            {
-                Disconnect();
-                controller = null;
-            }
-
+            Disconnect();
+            controller = null; 
         }
 
     }
