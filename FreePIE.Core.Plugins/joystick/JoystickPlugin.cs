@@ -93,14 +93,9 @@ namespace FreePIE.Core.Plugins.joystick
         {
             foreach (var j in globals)
             {
-                try
-                {
-                    Debug.WriteLine("Stopping Joystick {0}", j.name);
-                }
-                finally
-                {
-                    j.Dispose();
-                }
+                
+                j.Dispose();
+                
             }
 
             if (_directInput != null && !_directInput.IsDisposed)
