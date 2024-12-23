@@ -188,19 +188,19 @@ namespace FreePIE.Core.Plugins.vigem
 
         public double leftStickX
         {
-            get => Maths.EnsureMapRange(controller.LeftThumbX, 0, 255, -1, 1);
+            get => controller.LeftThumbX / 255.0;
             set => controller.SetAxisValue(DualShock4Axis.LeftThumbX, (byte)Maths.EnsureMapRange(value, -1, 1, 0, 255));
         }
 
         public double leftStickY
         {
-            get => -Maths.EnsureMapRange(controller.LeftThumbY, 0, 255, -1, 1);
+            get => controller.LeftThumbY / 255.0; 
             set => controller.SetAxisValue(DualShock4Axis.LeftThumbY, (byte)Maths.EnsureMapRange(value, 1, -1, 0, 255));
         }
 
         public double rightStickX
         {
-            get => Maths.EnsureMapRange(controller.RightThumbX, 0, 255, -1, 1);
+            get => controller.RightThumbX / 255.0; 
             set => controller.SetAxisValue(DualShock4Axis.RightThumbX, (byte)Maths.EnsureMapRange(value, -1, 1, 0, 255));
 
         }
@@ -208,7 +208,7 @@ namespace FreePIE.Core.Plugins.vigem
 
         public double rightStickY
         {
-            get => -Maths.EnsureMapRange(controller.RightThumbY, 0, 255, -1, 1);
+            get => controller.RightThumbY / 255.0;
             set => controller.SetAxisValue(DualShock4Axis.RightThumbY, (byte)Maths.EnsureMapRange(value, 1, -1, 0, 255));
         }
 
