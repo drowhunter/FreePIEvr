@@ -150,11 +150,8 @@ namespace FreePIE.Core.Plugins.vigem
             get => controller.LeftTrigger / 255.0;
             set
             {
-                if (value >= 0 && value <= 1)
-                {
-                    var v = (byte)Maths.EnsureMapRange(value, 0, 1, 0, 255);
-                    controller.SetSliderValue(Xbox360Slider.LeftTrigger, (byte)v);
-                }
+                var v = (byte)Maths.EnsureMapRange(value, 0, 1, 0, 255);
+                controller.SetSliderValue(Xbox360Slider.LeftTrigger, (byte)v);
             }
         }
 
@@ -163,11 +160,8 @@ namespace FreePIE.Core.Plugins.vigem
             get => controller.RightTrigger / 255.0;
             set
             {
-                if (value >= 0 && value <= 1)
-                {
-                    var v = Maths.EnsureMapRange(value, 0, 1, 0, 255);
-                    controller.SetSliderValue(Xbox360Slider.RightTrigger, (byte)v);
-                }
+                var v = Maths.EnsureMapRange(value, 0, 1, 0, 255);
+                controller.SetSliderValue(Xbox360Slider.RightTrigger, (byte)v);
             }
         }
 
