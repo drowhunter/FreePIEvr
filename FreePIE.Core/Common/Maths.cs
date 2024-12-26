@@ -8,17 +8,25 @@ namespace FreePIE.Core.Common
 {
     public static class Maths
     {
-        public static bool IsBetween(double val, double min, double max, bool isInclusive = true)
+        /// <summary>
+        /// Apply the sign of y to x
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public static double CopySign(double x, double y) 
         {
-            if (isInclusive)
-            {
-                return (val >= min) && (val <= max);
-            }
-            else
-            {
-                return (val > min) && (val < max);
-            }
+            return x * (y < 0 ? -1 : 1);
         }
+
+        public static double DeadZone(double x, double deadZone, double minY, double maxY)
+        {
+            if (Deadband(x, deadZone) == 0)
+                return 0;
+
+            return CopySign(EnsureMapRange(Math.Abs(x), deadZone, 1, minY, maxY), x);
+        }
+
 
         public static double Deadband(double x, double deadZone, double minY, double maxY)
         {

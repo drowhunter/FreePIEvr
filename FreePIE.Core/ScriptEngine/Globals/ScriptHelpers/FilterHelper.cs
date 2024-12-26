@@ -91,6 +91,10 @@ namespace FreePIE.Core.ScriptEngine.Globals.ScriptHelpers
             return strategy.Out;
         }
 
+
+        public double deadzone(double x, double deadZone, double minY, double maxY) => Maths.DeadZone(x, deadZone, minY, maxY);
+
+
         public double deadband(double x, double deadZone, double minY, double maxY) => Maths.Deadband(x, deadZone, minY, maxY);
         
 
