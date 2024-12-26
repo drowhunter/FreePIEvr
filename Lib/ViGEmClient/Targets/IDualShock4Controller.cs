@@ -23,6 +23,10 @@ public interface IDualShock4Controller : IVirtualGamepad, IDisposable
 
     ref byte RightThumbY { get; }
 
+    ref ushort ButtonState { get; }
+
+    ref byte SpecialButtonState { get; }
+
     void SetButtonState(DualShock4Button button, bool pressed);
     
     void SetDPadDirection(DualShock4DPadDirection direction);
