@@ -2,7 +2,7 @@
 #define OVR_FREEPIE_6DOF_H
 
 #include <openxr.h>
-#include <loader_interfaces.h>
+#include <openxr_loader_negotiation.h>
 
 typedef struct ovr_freepie_6dof
 {

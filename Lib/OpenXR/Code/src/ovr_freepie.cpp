@@ -37,7 +37,7 @@ const unsigned int DEBUG_PRINT_BINDING_ERRORS = 2;
 
 const unsigned int EXTENSION_HAND_TRACKING = 1;
 
-const char* DEBUG_FILENAME = "x:/test.txt";
+const char* DEBUG_FILENAME = "c:/test.txt";
 
 // memory mapped file
 HANDLE hOutputFileMapping;
