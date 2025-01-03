@@ -1,22 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FreePIE.Core.Common
 {
     public static class Maths
     {
         /// <summary>
+        /// Apply the sign of y to x if y is less than 0
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public static double CopyNegSign(double x, double y) 
+        {
+            return x * (y < 0 ? -1 : 1);
+        }
+
+        /// <summary>
         /// Apply the sign of y to x
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public static double CopySign(double x, double y) 
+        public static double CopySign(double x, double y)
         {
-            return x * (y < 0 ? -1 : 1);
+            return x * Math.Sign(y);
         }
 
         public static double DeadZone(double x, double deadZone, double minY, double maxY)
@@ -24,7 +31,7 @@ namespace FreePIE.Core.Common
             if (Deadband(x, deadZone) == 0)
                 return 0;
 
-            return CopySign(EnsureMapRange(Math.Abs(x), deadZone, 1, minY, maxY), x);
+            return CopyNegSign(EnsureMapRange(Math.Abs(x), deadZone, 1, Math.Abs(minY), Math.Abs(maxY)), x);
         }
 
 
