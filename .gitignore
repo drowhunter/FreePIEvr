@@ -104,3 +104,4 @@ NPClient
 *.log
 *.pdb
 *.obj
+.vscode
