@@ -2,7 +2,6 @@
 using FreePIE.Core.Contracts;
 
 using SharpDX.DirectInput;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,6 +23,8 @@ namespace FreePIE.Core.Plugins.joystick
         HalfAxisInverted,
         Raw,
     }
+
+    
 
     public class JoyCount
     {
@@ -85,7 +86,7 @@ namespace FreePIE.Core.Plugins.joystick
             // Initialize Properties
 
             name = joystick.Information.ProductName;
-            config = new JoyConfig(joystick.Information.ProductName) { sliders = _state.Sliders.Select(s => axisConfig.FullAxis).ToList() };
+            config = new JoyConfig() { sliders = _state.Sliders.Select(s => axisConfig.FullAxis).ToList() };
 
             buttons = new bool[joystick.Capabilities.ButtonCount];
 
@@ -179,7 +180,7 @@ namespace FreePIE.Core.Plugins.joystick
             
         }
 
-        public void Dispose()
+        void IDisposable.Dispose()
         {
             _joystick?.Unacquire();
             _joystick?.Dispose();
