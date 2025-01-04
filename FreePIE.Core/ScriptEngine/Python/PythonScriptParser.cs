@@ -162,11 +162,11 @@ namespace FreePIE.Core.ScriptEngine.Python
                 {
                     var name = GlobalsInfo.GetGlobalName(needIndex.Global);
                     var methodName = needIndex.MethodInfo.Name;
-                    var searchFor = string.Format("{0}.{1}", name, methodName);
+                    var searchFor = string.Format("{0}.{1}(", name, methodName);
 
                     if (i + searchFor.Length <= script.Length && script.Substring(i, searchFor.Length) == searchFor)
                     {
-                        int argumentStart = i + searchFor.Length;
+                        int argumentStart = i + searchFor.Length - 1;
                         var arguments = ExtractArguments(script, argumentStart);
                         int argumentEnd = argumentStart + arguments.Length;
 

@@ -203,7 +203,8 @@ namespace FreePIE.Core.ScriptEngine.Python
             try
             {
                 func();
-            } catch(ThreadAbortException)
+            } 
+            catch(ThreadAbortException)
             {
                 Thread.ResetAbort();
                 throw new Exception("Had to forcibly shut down script - try removing infinite loops from the script");
