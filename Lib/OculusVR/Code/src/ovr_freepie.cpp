@@ -120,50 +120,66 @@ int ovr_freepie_read(ovr_freepie_data *output)
 }
 int ovr_freepie_trigger_haptic_pulse(unsigned int controllerIndex, float duration, float frequency, float amplitude)
 {
-	if (controllerIndex == 0)
+	ovrControllerType_ controller = ovrControllerType_LTouch;
+	if (controllerIndex > 0)
+		controller = ovrControllerType_RTouch;
+	
+	ovrTouchHapticsDesc desc = ovr_GetTouchHapticsDesc(HMD, controller);
+	
+	ovrHapticsPlaybackState state;
+	ovrResult result = ovr_GetControllerVibrationState(HMD, controller, &state);
+	if (result != ovrSuccess || state.SamplesQueued >= desc.QueueMinSizeToAvoidStarvation)
 	{
-		ovr_SetControllerVibration(HMD, ovrControllerType_LTouch, frequency, amplitude);	
+		return 1;
 	}
-	else
+	
+	int sampleCount = desc.SampleRateHz * duration;	
+	if (sampleCount < desc.SubmitMinSamples)
 	{
-		ovr_SetControllerVibration(HMD, ovrControllerType_RTouch, frequency, amplitude);
+		sampleCount = desc.SubmitMinSamples;
 	}
+	else if (sampleCount > desc.SubmitMaxSamples)
+	{
+		sampleCount = desc.SubmitMaxSamples;
+	}
+	int intervalLength = frequency > 0 ? round(1 / frequency) : sampleCount;
+	if (intervalLength < 1)
+	{
+		intervalLength = 1;
+	}
+	float halfLength = intervalLength / 2;
 
-	//unsigned char amplitudeChar = (uint8_t)255;// round(amplitude * 255);
-	//ovrControllerType_ controller = ovrControllerType_LTouch;
-	//if (controllerIndex > 0)
-	//	controller = ovrControllerType_RTouch;
-	//
-	//ovrTouchHapticsDesc desc = ovr_GetTouchHapticsDesc(HMD, controller);
-	//
-	//ovrHapticsPlaybackState state;
-	//ovrResult result = ovr_GetControllerVibrationState(HMD, controller, &state);
-	//if (result != ovrSuccess || state.SamplesQueued >= desc.QueueMinSizeToAvoidStarvation)
-	//{
-	//	return 1;
-	//}
-	//
-	//unsigned char* samples = new unsigned char [desc.SubmitOptimalSamples];
-	//for (int32_t i = 0; i < desc.SubmitOptimalSamples; ++i)
-	//	samples[i] = amplitudeChar;
-	//
-	//ovrHapticsBuffer buffer;
-	//buffer.SubmitMode = ovrHapticsBufferSubmit_Enqueue;
-	//buffer.SamplesCount = desc.SubmitOptimalSamples;
-	//buffer.Samples = samples;
-	//result = ovr_SubmitControllerVibration(HMD, controller, &buffer);
-	//delete[] samples;
-	//
-	//if (result != ovrSuccess)
-	//{
-	//	return 1;
-	//}
-	//
-	//result = ovr_GetControllerVibrationState(HMD, controller, &state);
-	//if (result != ovrSuccess || state.SamplesQueued >= desc.QueueMinSizeToAvoidStarvation)
-	//{
-	//	return 1;
-	//}
+	
+	unsigned char* samples = new unsigned char [sampleCount];
+	for (int32_t i = 0; i < sampleCount; ++i)
+	{
+		float offsetToMax = (halfLength - i % intervalLength) / halfLength;
+		if (offsetToMax < 0)
+		{
+			offsetToMax = -offsetToMax;
+		}
+		unsigned char amplitudeChar = (uint8_t)round(amplitude-offsetToMax * 255);
+
+		samples[i] = amplitudeChar;
+	}
+	
+	ovrHapticsBuffer buffer;
+	buffer.SubmitMode = ovrHapticsBufferSubmit_Enqueue;
+	buffer.SamplesCount = desc.SubmitOptimalSamples;
+	buffer.Samples = samples;
+	result = ovr_SubmitControllerVibration(HMD, controller, &buffer);
+	delete[] samples;
+	
+	if (result != ovrSuccess)
+	{
+		return 1;
+	}
+	
+	result = ovr_GetControllerVibrationState(HMD, controller, &state);
+	if (result != ovrSuccess || state.SamplesQueued >= desc.QueueMinSizeToAvoidStarvation)
+	{
+		return 1;
+	}
 	
 	return 0;
 }
