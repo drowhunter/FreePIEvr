@@ -86,6 +86,7 @@
       <Link>VersionInfo.cs</Link>
     </Compile>
     <Compile Include="ComDevicePlugin.cs" />
+    <Compile Include="Hid\HIDApi.cs" />
     <Compile Include="MemoryMappedFilePlugin.cs" />
     <Compile Include="FreePieIOPlugin.cs" />
     <Compile Include="Globals\GlobalIndexer.cs" />
@@ -108,6 +109,8 @@
     <Compile Include="MouseKeyboard\MouseKeyIO.cs" />
     <Compile Include="MouseKeyboard\MousePlugin.cs" />
     <Compile Include="OpenTrackPlugin.cs" />
+    <Compile Include="RotoVr\GlobalEnums.cs" />
+    <Compile Include="RotoVr\RotoPlugin.cs" />
     <Compile Include="vigem\DualShockOutputPlugin.cs" />
     <Compile Include="vigem\ViGemPluginBase.cs" />
     <Compile Include="vigem\XboxOutputPlugin.cs" />
@@ -167,12 +170,17 @@
       <Project>{BCF7160F-9CB9-46E5-91CA-EE15E1D5ED54}</Project>
       <Name>FreePIE.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Lib\com.rotovr.sdk\com.rotovr.sdk.csproj">
+      <Project>{187e7d59-964e-4b92-af23-a352cd0d4b3a}</Project>
+      <Name>com.rotovr.sdk</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Lib\ViGEmClient\ViGEmClient.NET.csproj">
       <Project>{82c454a9-bfd0-4d40-bec2-d6f6dcc0af07}</Project>
       <Name>ViGEmClient.NET</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    
     <None Include="Help\FreePIE.Core.Plugins.HydraPlugin.rtf" />
     <None Include="Help\FreePIE.Core.Plugins.AndroidPlugin.rtf" />
     <None Include="Help\FreePIE.Core.Plugins.PPJoyPlugin.rtf" />

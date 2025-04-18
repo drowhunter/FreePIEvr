@@ -48,6 +48,42 @@ namespace FreePIE.Core.ScriptEngine.Globals.ScriptHelpers
             return y * (reverse ? -1 : 1);
         }
 
+        /// <summary>  
+        /// Convert x,y coordinates to angle from 0-360 and magnitude  
+        /// </summary>  
+        /// <param name="x">The x-coordinate</param>  
+        /// <param name="y">The y-coordinate</param>  
+        /// <returns>A tuple containing the angle (0-360) and magnitude (0-1)</returns>  
+        public (double angle, double magnitude) rectToPolar(double x, double y)
+        {
+            // Calculate the magnitude using the Pythagorean theorem  
+            double magnitude = Math.Sqrt(x * x + y * y);
+
+            // Normalize the magnitude to the range [0, 1]  
+            magnitude = Math.Min(1, magnitude);
+
+            // Calculate the angle in radians and convert to degrees  
+            double angle = Math.Atan2(x, y) * (180 / Math.PI);
+
+            // Ensure the angle is in the range [0, 360]  
+            if (angle < 0)
+                angle += 360;
+
+            return (angle, magnitude);
+        }
+
+        public (double x, double y) polarToRect(double degrees, double magnitude)
+        {
+            // Convert degrees to radians  
+            double radians = degrees * (Math.PI / 180);
+
+            // Calculate x and y using the magnitude and angle  
+            double y = magnitude * Math.Cos(radians);
+            double x = magnitude * Math.Sin(radians);
+
+            return (x, y);
+        }
+
     }
    
 }
