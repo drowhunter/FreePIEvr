@@ -75,6 +75,7 @@
     <Compile Include="Common\Extensions\CollectionExtensions.cs" />
     <Compile Include="Common\Extensions\DiagnosticExtensions.cs" />
     <Compile Include="Common\Extensions\StringExtensions.cs" />
+    <Compile Include="Common\Extensions\TaskExtensions.cs" />
     <Compile Include="Common\Extensions\TypeExtensions.cs" />
     <Compile Include="Common\FileSystem.cs" />
     <Compile Include="Common\Events\IEventAggregator.cs" />

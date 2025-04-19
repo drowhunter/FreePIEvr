@@ -59,6 +59,9 @@
     <!--<Reference Include="PPJoyWrapper">
       <HintPath>..\Lib\PPJoyWrapper\PPJoyWrapper.dll</HintPath>
     </Reference>-->
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="SharpDX, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpDX.4.2.0\lib\net45\SharpDX.dll</HintPath>
     </Reference>
@@ -111,6 +114,11 @@
     <Compile Include="OpenTrackPlugin.cs" />
     <Compile Include="RotoVr\GlobalEnums.cs" />
     <Compile Include="RotoVr\RotoPlugin.cs" />
+    <Compile Include="Telemetry\ByteConverters.cs" />
+    <Compile Include="Telemetry\MmfTelemetry.cs" />
+    <Compile Include="Telemetry\TelemetryBase.cs" />
+    <Compile Include="Telemetry\UdpTelemetry.cs" />
+    <Compile Include="YawGamelinkPlugin.cs" />
     <Compile Include="vigem\DualShockOutputPlugin.cs" />
     <Compile Include="vigem\ViGemPluginBase.cs" />
     <Compile Include="vigem\XboxOutputPlugin.cs" />
@@ -180,7 +188,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    
     <None Include="Help\FreePIE.Core.Plugins.HydraPlugin.rtf" />
     <None Include="Help\FreePIE.Core.Plugins.AndroidPlugin.rtf" />
     <None Include="Help\FreePIE.Core.Plugins.PPJoyPlugin.rtf" />
