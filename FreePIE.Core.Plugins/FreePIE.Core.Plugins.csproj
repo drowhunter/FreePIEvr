@@ -118,7 +118,6 @@
     <Compile Include="Telemetry\MmfTelemetry.cs" />
     <Compile Include="Telemetry\TelemetryBase.cs" />
     <Compile Include="Telemetry\UdpTelemetry.cs" />
-    <Compile Include="YawGamelinkPlugin.cs" />
     <Compile Include="vigem\DualShockOutputPlugin.cs" />
     <Compile Include="vigem\ViGemPluginBase.cs" />
     <Compile Include="vigem\XboxOutputPlugin.cs" />
@@ -140,34 +139,9 @@
     <Compile Include="TrackIR\TrackIRDll.cs" />
     <Compile Include="TrackIR\TrackIRHeadposeData.cs" />
     <Compile Include="VigemPlugin.cs" />
-    <Compile Include="WiimotePlugin.cs" />
-    <Compile Include="Wiimote\CapabilitiesGlobal.cs" />
-    <Compile Include="Wiimote\AccelerationGlobal.cs" />
-    <Compile Include="Wiimote\Calibratable.cs" />
-    <Compile Include="Wiimote\CircularBuffer.cs" />
-    <Compile Include="Wiimote\BalanceBoard.cs" />
-    <Compile Include="Wiimote\ClassicController.cs" />
-    <Compile Include="Wiimote\DolphiimoteBridge.cs" />
-    <Compile Include="Wiimote\DolphiimoteDLL.cs" />
-    <Compile Include="Wiimote\DolphiimoteWiimoteData.cs" />
-    <Compile Include="Wiimote\ExtensionGlobal.cs" />
-    <Compile Include="Wiimote\Guitar.cs" />
-    <Compile Include="Wiimote\IMotionPlusFuser.cs" />
-    <Compile Include="Wiimote\Integrator.cs" />
-    <Compile Include="Wiimote\IWiimoteBridge.cs" />
-    <Compile Include="Wiimote\IWiimoteData.cs" />
-    <Compile Include="Wiimote\MotionPlusGlobal.cs" />
-    <Compile Include="Wiimote\Nunchuck.cs" />
-    <Compile Include="Wiimote\SamplePeriodCounter.cs" />
-    <Compile Include="Wiimote\SequenceExtensions.cs" />
-    <Compile Include="Wiimote\StatusGlobal.cs" />
-    <Compile Include="Wiimote\Subscribable.cs" />
-    <Compile Include="Wiimote\TimedValue.cs" />
-    <Compile Include="Wiimote\TimeSeries.cs" />
-    <Compile Include="Wiimote\WiimoteButton.cs" />
-    <Compile Include="Wiimote\WiimoteCalibration.cs" />
     <Compile Include="WindowPlugin.cs" />
     <Compile Include="XBox360Plugin.cs" />
+    <Compile Include="YawGamelinkPlugin.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FreePIE.Core.Contracts\FreePIE.Core.Contracts.csproj">

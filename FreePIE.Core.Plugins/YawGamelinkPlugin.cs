@@ -1,5 +1,6 @@
 ﻿using FreePIE.Core.Contracts;
 using FreePIE.Core.Model;
+using FreePIE.Core.Plugins.joystick;
 using FreePIE.Core.Plugins.Telemetry;
 
 using System;
@@ -52,7 +53,7 @@ namespace FreePIE.Core.Plugins
         }
     }
 
-    public class YawGLByteConverter : IByteConvertor<YawGLData>
+    class YawGLByteConverter : IByteConvertor<YawGLData>
     {
         static Regex rot = new Regex($@"Y\[(?<yaw>[\d.]+)\]P\[(?<pitch>[\d.]+)\]R\[(?<roll>[\d.]+)\]");
 
@@ -107,6 +108,7 @@ namespace FreePIE.Core.Plugins
         }
     }
 
+    [GlobalType(Type = typeof(YawGamelinkGlobal), IsIndexed = false)]
     public class YawGamelinkPlugin : Plugin
     {
         public override string FriendlyName => "Yaw GameLink Plugin";
@@ -187,7 +189,7 @@ namespace FreePIE.Core.Plugins
 
     }
 
-    [Global(Name = "yawgamelink")]
+    [Global(Name = "yawvr")]
     public class YawGamelinkGlobal : UpdateblePluginGlobal<YawGamelinkPlugin>
     {
         public float yaw => plugin.Data.yaw;
