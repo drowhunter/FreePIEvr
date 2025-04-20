@@ -34,7 +34,7 @@ namespace com.rotovr.sdk
                 m_dispatcher = UnityMainThreadDispatcher.Instance();
             }
            
-            m_connectionThread = new Thread(ConnectToDevice);
+            m_connectionThread = new Thread(ConnectToDevice) { Name = "ConnectToDevice", IsBackground = true };
             m_connectionThread.Start();
         }
 
