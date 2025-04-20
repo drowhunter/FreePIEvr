@@ -157,7 +157,9 @@ namespace com.rotovr.sdk
                     m_dispatcher.Enqueue(() => { OnConnectionStatus?.Invoke(ConnectionStatus.Disconnected); });
                 }
 
-                m_connectionThread?.Join();
+                if (m_connectionThread != null)
+                    m_connectionThread.Abort();
+                //m_connectionThread?.Join(5000);
             });
         }
 

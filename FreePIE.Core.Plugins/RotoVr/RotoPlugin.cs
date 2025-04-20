@@ -76,12 +76,15 @@ namespace FreePIE.Core.Plugins.RotoPlugin
 
         public override void Stop()
         {
-            // Cleanup the plugin
-            Roto.Disconnect();
+            
 
             Roto.OnModeChanged -= _roto_OnModeChanged;
             Roto.OnConnectionStatusChanged -= _roto_OnConnectionStatusChanged;
             Roto.OnDataChanged -= _roto_OnDataChanged;
+
+            // Cleanup the plugin
+            Roto.Disconnect();
+
             Roto = null;
         }
 
