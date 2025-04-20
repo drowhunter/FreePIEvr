@@ -46,7 +46,7 @@ namespace FreePIE.Core.Plugins.Telemetry
         private IPEndPoint ParseAddressAndPort(string address)
         {
             if (string.IsNullOrWhiteSpace(address))
-                throw new ArgumentException("Invalid address format. Expected format: ipaddress:port");
+                return null;
 
             var parts = address.Split(':');
             if (parts.Length != 2)

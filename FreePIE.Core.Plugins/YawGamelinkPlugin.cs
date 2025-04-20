@@ -1,14 +1,8 @@
 ﻿using FreePIE.Core.Contracts;
-using FreePIE.Core.Model;
-using FreePIE.Core.Plugins.joystick;
 using FreePIE.Core.Plugins.Telemetry;
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -55,7 +49,7 @@ namespace FreePIE.Core.Plugins
 
     class YawGLByteConverter : IByteConvertor<YawGLData>
     {
-        static Regex rot = new Regex($@"Y\[(?<yaw>[\d.]+)\]P\[(?<pitch>[\d.]+)\]R\[(?<roll>[\d.]+)\]");
+        static Regex rot = new Regex($@"Y\[(?<yaw>-?[\d.]+)\]P\[(?<pitch>-?[\d.]+)\]R\[(?<roll>-?[\d.]+)\]");
 
         static Regex vibes = new Regex($@"V\[(?<amp>\d+?),\d*?,\d*?,(?<hz>\d*?)\]");
 
@@ -155,8 +149,8 @@ namespace FreePIE.Core.Plugins
                 try
                 {
                     Data = await udp.ReceiveAsync(_cancellationTokenSource.Token);
-                    
 
+                    OnUpdate();
 
                 }
                 catch (Exception ex)
@@ -184,7 +178,7 @@ namespace FreePIE.Core.Plugins
 
         public override void Stop()
         {
-            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource?.Cancel();
         }
 
     }

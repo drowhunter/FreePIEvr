@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
+
 using FreePIE.Core.Common;
 using FreePIE.Core.Contracts;
 using FreePIE.Core.Model.Events;
@@ -33,7 +35,12 @@ namespace FreePIE.Core.ScriptEngine.Python
                             PluginType = pt
                         }
                 )
-                .Where(info => script.Contains(info.Name))
+                .Where(info =>
+                {
+                    var m = Regex.Match(script, $@"\b{info.Name}\.").Success;
+                    return m;
+                })
+                //script.Contains(info.Name))
                 .Select(info => info.PluginType).ToList();
 
             return pluginInvoker.InvokeAndConfigurePlugins(pluginTypes);
