@@ -504,8 +504,10 @@ namespace com.rotovr.sdk
             }
             
             m_CancelSource = new CancellationTokenSource();
-            
-            new Thread(FollowTargetRoutine).Start();
+
+            var t = new Thread(FollowTargetRoutine) { Name = "FollowTargetRoutine", IsBackground = true };            
+
+            t.Start();
 
         }
 

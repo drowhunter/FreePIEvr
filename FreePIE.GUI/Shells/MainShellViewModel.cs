@@ -35,6 +35,10 @@ namespace FreePIE.GUI.Shells
         private readonly IParser parser;
         private WindowState windowState = WindowState.Minimized;
         private bool showInTaskBar = true;
+
+        public double width = 800;
+        public double height = 600;
+
         public MainShellViewModel(IResultFactory resultFactory,
                                   IEventAggregator eventAggregator,
                                   IPersistanceManager persistanceManager,
@@ -83,6 +87,29 @@ namespace FreePIE.GUI.Shells
             InitDocking();
             parser.ParseAndExecute();
             eventAggregator.Publish(new StartedEvent());
+
+            // load widow width and height from an external file
+            var windowSizePath = paths.GetDataPath("windowSize.config");
+            if (fileSystem.Exists(windowSizePath))
+            {
+                var size = fileSystem.ReadAllText(windowSizePath);
+                var sizes = size.Split(',');
+                if (sizes.Length == 2)
+                {
+                    if (double.TryParse(sizes[0], out var w))
+                        Width = w;
+
+                    if (double.TryParse(sizes[1], out var h))
+                    {
+                        Height = h;
+                    }
+                }
+            }
+            else
+            {
+                Width = 800;
+                Height = 600;
+            }
         }
 
         private void InitDocking()
@@ -184,6 +211,27 @@ namespace FreePIE.GUI.Shells
             }
         }
 
+        public double Width
+        {
+            get { return width; }
+            set
+            {
+                if (value == width) return;
+                width = value;
+                NotifyOfPropertyChange(() => Width);
+            }
+        }
+
+        public double Height
+        {
+            get { return height; }
+            set
+            {
+                if (value == height) return;
+                height = value;
+                NotifyOfPropertyChange(() => Height);
+            }
+        }
 
         protected override IEnumerable<IResult> CanClose()
         {
@@ -219,6 +267,18 @@ namespace FreePIE.GUI.Shells
             persistanceManager.Save();
             var layoutSerializer = new XmlLayoutSerializer(DockingManager);
             layoutSerializer.Serialize(paths.GetDataPath(dockingConfig));
+
+            // save window width and height to an external file for loading later
+
+            var windowSizePath = paths.GetDataPath("windowSize.config");
+            if (fileSystem.Exists(windowSizePath))
+            {
+                fileSystem.Delete(windowSizePath);
+            }
+            fileSystem.WriteAllText(windowSizePath, string.Format("{0},{1}", Width, Height));
+            
+
+
         }
 
         void Core.Common.Events.IHandle<SaveSettingsEvent>.Handle(SaveSettingsEvent message)
