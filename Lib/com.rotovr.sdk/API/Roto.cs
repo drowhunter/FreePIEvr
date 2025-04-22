@@ -306,7 +306,7 @@ namespace com.rotovr.sdk
                     break;
 #endif
                 case CalibrationMode.SetToZero:
-                    RotateToAngle(GetDirection(0, m_RotoData.Angle), 0, 100);
+                    RotateToAngle(GetDirection(0, m_RotoData.Angle), 0, 30);
                     break;
             }
         }
@@ -469,12 +469,19 @@ namespace com.rotovr.sdk
 
             int targetAngle = m_RotoData?.Angle ?? 0;
 
+            
+
             if (m_ObservableTarget != null)
             {
 #if !NO_UNITY
                 targetAngle = m_ObservableTarget.eulerAngles.y;
 #else
-                targetAngle = (int)Math.Abs(m_ObservableTarget() % 360);
+                var a = m_ObservableTarget();
+                targetAngle = (int) Math.Abs(a % 360) * Math.Sign(a);
+               
+                if (targetAngle < 0)
+                    targetAngle += 360;
+               
 
 #endif
             }
@@ -628,6 +635,16 @@ namespace com.rotovr.sdk
         }
 
 #else
+        public static double MapRange(double x, double xMin, double xMax, double yMin, double yMax)
+        {
+            return yMin + (yMax - yMin) * (x - xMin) / (xMax - xMin);
+        }
+
+        public static double EnsureMapRange(double x, double xMin, double xMax, double yMin, double yMax)
+        {
+            return Math.Max(Math.Min(MapRange(x, xMin, xMax, yMin, yMax), Math.Max(yMin, yMax)), Math.Min(yMin, yMax));
+        }
+
         void FollowTargetRoutine()
         {
             if (m_ObservableTarget == null)
@@ -639,10 +656,10 @@ namespace com.rotovr.sdk
                 var modeParams = new ModeParams
                 {
                     CockpitAngleLimit = 30,
-                    MaxPower = _followPower
+                    MaxPower = 30
                 };
 
-                SetMode(ModeType.HeadTrack, modeParams);
+                //SetMode(ModeType.HeadTrack, modeParams);
 
                 while (!m_CancelSource.IsCancellationRequested)
                 {
@@ -659,8 +676,10 @@ namespace com.rotovr.sdk
 
                         var delta = Math.Abs(rotoAngle - m_RotoData.Angle);
 
+
+                        var spd = EnsureMapRange(delta, 0, 60, 5, 80);
                         if (delta > 2)
-                            RotateToAngle(Direction.Left, rotoAngle, 30);
+                            RotateToAngle(Direction.Right, rotoAngle, (int) spd);
                     }
 
                     

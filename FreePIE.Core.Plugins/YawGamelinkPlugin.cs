@@ -1,4 +1,5 @@
-﻿using FreePIE.Core.Contracts;
+﻿using FreePIE.Core.Common;
+using FreePIE.Core.Contracts;
 using FreePIE.Core.Plugins.Telemetry;
 
 using System;
@@ -13,11 +14,11 @@ namespace FreePIE.Core.Plugins
     public struct YawGLData
     {
         public float yaw;
-        public float pitch;
-        public float roll;
-        public byte amp;
-        public byte hz;
-        public byte fan;
+        public float pitch;//-180 to 180
+        public float roll; // -180 to 180
+        public float amp; //0-254
+        public float hz; // if hz == 0 amp = 0
+        public float fan;
 
         public override string ToString()
         {
@@ -57,6 +58,18 @@ namespace FreePIE.Core.Plugins
 
         static CultureInfo c = CultureInfo.InvariantCulture;
 
+        private float FullCircle(float degrees) => (degrees + 360) % 360;   
+        
+        private float FullCircle2(float degrees)
+        {
+            if (degrees < 0)
+            {
+                degrees += 360;
+            }
+
+            return degrees;
+        }
+
         public YawGLData FromBytes(byte[] data)
         {
             var dataString = Encoding.ASCII.GetString(data);
@@ -67,22 +80,22 @@ namespace FreePIE.Core.Plugins
                 var r = rot.Match(dataString);
                 if (r.Success)
                 {
-                    yawGLData.yaw = float.Parse(r.Groups["yaw"].Value, c);
-                    yawGLData.pitch = float.Parse(r.Groups["pitch"].Value, c);
-                    yawGLData.roll = float.Parse(r.Groups["roll"].Value, c);
+                    yawGLData.yaw = FullCircle(float.Parse(r.Groups["yaw"].Value, c));      //-180-180
+                    yawGLData.pitch = FullCircle(float.Parse(r.Groups["pitch"].Value, c));  //-180-180
+                    yawGLData.roll = FullCircle(float.Parse(r.Groups["roll"].Value, c));    //-180-180
                 }
 
                 var v = vibes.Match(dataString);
                 if (v.Success)
                 {
-                    yawGLData.amp = byte.Parse(v.Groups["amp"].Value, c);
-                    yawGLData.hz = byte.Parse(v.Groups["hz"].Value, c);
+                    yawGLData.amp = byte.Parse(v.Groups["amp"].Value, c)/ byte.MaxValue;
+                    yawGLData.hz = byte.Parse(v.Groups["hz"].Value, c)/ byte.MaxValue;
                 }
 
                 var f = fan.Match(dataString);
                 if (f.Success)
                 {
-                    yawGLData.fan = byte.Parse(f.Groups["fan"].Value, c);
+                    yawGLData.fan = byte.Parse(f.Groups["fan"].Value, c) / byte.MaxValue;
                 }
 
                 
@@ -192,11 +205,11 @@ namespace FreePIE.Core.Plugins
 
         public float roll => plugin.Data.roll;
 
-        public byte amp => plugin.Data.amp;
+        public float amp => plugin.Data.amp;
 
-        public byte hz => plugin.Data.hz;
+        public float hz => plugin.Data.hz;
 
-        public byte fan => plugin.Data.fan;
+        public float fan => plugin.Data.fan;
 
 
         public void listen(string receiveAddress)

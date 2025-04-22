@@ -9,6 +9,20 @@ using System.Threading.Tasks;
 namespace FreePIE.Core.Plugins.RotoVr
 {
     [GlobalEnum]
+    public enum RotoDirection : byte
+    {
+        /// <summary>
+        /// Rotate to the left (counterclockwise).
+        /// </summary>
+        Left = 0x00,
+
+        /// <summary>
+        /// Rotate to the right (clockwise).
+        /// </summary>
+        Right = 0x01,
+    }
+
+    [GlobalEnum]
     public enum RotoModeType : byte
     {
         /// <summary>

@@ -25,6 +25,31 @@ namespace FreePIE.Core.Plugins.RotoPlugin
         
         public ModeType Mode = default;
 
+        private int? zeroAngle = null;
+
+        private int? ZeroAngle
+        {
+            get => zeroAngle;            
+            set
+            {
+                if(zeroAngle == null)
+                    zeroAngle = value;
+            }
+        }
+
+        public int Angle
+        {
+            get
+            {
+                if (rotoDataModel == null)
+                    return 0;
+                var a = (rotoDataModel.Angle + (ZeroAngle ?? 0));
+                if (a < 0)
+                    a += 360;
+                return a;
+            }
+        }
+
         public RotoPlugin()
         {
             
@@ -32,6 +57,11 @@ namespace FreePIE.Core.Plugins.RotoPlugin
 
         private void _roto_OnDataChanged(RotoDataModel obj)
         {
+            if(Mode == ModeType.FollowObject && ZeroAngle == null)
+            {
+                ZeroAngle = -obj.Angle;
+            }
+            
             rotoDataModel = obj;
             //Mode = (ModeType) Enum.Parse(typeof(ModeType),obj.Mode);
             if(Enum.TryParse(obj.Mode, out ModeType mode))
@@ -66,7 +96,7 @@ namespace FreePIE.Core.Plugins.RotoPlugin
 
             SwitchMode(RotoModeType.IdleMode);//, 0, 1, RotoMovementMode.Jerky);
 
-
+            SetPower(1);
             
 
             return null;
@@ -76,7 +106,7 @@ namespace FreePIE.Core.Plugins.RotoPlugin
 
         public override void Stop()
         {
-            
+            Roto.SwitchMode(ModeType.IdleMode);
 
             Roto.OnModeChanged -= _roto_OnModeChanged;
             Roto.OnConnectionStatusChanged -= _roto_OnConnectionStatusChanged;
@@ -93,7 +123,7 @@ namespace FreePIE.Core.Plugins.RotoPlugin
             
         }
 
-        public void SetPower(double power)
+        public void SetPower(double power = 1)
         {
             var p = Maths.EnsureMapRange(power, 0, 1, 30, 100);
             Roto.SetPower(RoundDouble(p));
@@ -105,14 +135,14 @@ namespace FreePIE.Core.Plugins.RotoPlugin
         /// </summary>
         /// <param name="seconds"></param>
         /// <param name="power">value 0 - 1 </param>
-        public void Rumble(double seconds, double power)
+        public void Rumble(double seconds, double power = 1)
         {
             var p = Maths.EnsureMapRange(power, 0, 1, 0, 100);
             Roto.Rumble((float)seconds, RoundDouble(p));
         }
 
 
-        public void Rotate(double degrees, double power)
+        public void Rotate(double degrees, double power = 1)
         {
             var p = Maths.EnsureMapRange(power, 0, 1, 0, 100);
             var (d,a) = GetAngleDirection(degrees);
@@ -120,18 +150,18 @@ namespace FreePIE.Core.Plugins.RotoPlugin
             Roto.Rotate(d, a, RoundDouble(p));
         }
 
-        public void RotateTo(double degrees, double power)
-        {
-            var p = Maths.EnsureMapRange(power, 0, 1, 0, 100);
-            var d = GetAngleDirection(degrees);
-            Roto.RotateToAngle(d.direction, d.angle, RoundDouble(p));
-        }
-
-        public void RotateClosest(double degrees, double power)
+        public void RotateTo(RotoDirection direction, double degrees, double power = 1)
         {
             var p = Maths.EnsureMapRange(power, 0, 1, 0, 100);
             
-            Roto.RotateToClosestAngleDirection(RoundDouble(degrees), RoundDouble(p));
+            Roto.RotateToAngle(direction == RotoDirection.Left ? Direction.Left : Direction.Right, RoundDouble(Ensure360(degrees)), RoundDouble(p));
+        }
+
+        public void RotateClosest(double degrees, double power = 1)
+        {
+            var p = Maths.EnsureMapRange(power, 0, 1, 0, 100);
+            
+            Roto.RotateToClosestAngleDirection(RoundDouble(Ensure360(degrees)), RoundDouble(p));
         }
 
         public void SwitchMode(RotoModeType mode, Func<float> targetFunc = null)//, double limit, double power, RotoMovementMode movementMode)
@@ -141,17 +171,26 @@ namespace FreePIE.Core.Plugins.RotoPlugin
 
             var m = (ModeType)(byte)mode;
 
-            if (mode != RotoModeType.HeadTrack)
+            if (mode == RotoModeType.FollowObject )
             {
-                Roto.SwitchMode(m, targetFunc);//, new ModeParams { CockpitAngleLimit = l, MaxPower = p, MovementMode = (MovementMode)(byte)movementMode });               
+                Roto.SwitchMode(m, new ModeParams { CockpitAngleLimit = 0, MaxPower = 100 }, targetFunc);               
             }
             else //if(m == ModeType.HeadTrack)
             {
                 Roto.roto.SetMode(m, new ModeParams { MaxPower = 100 });
+                //SetPower(1);
             }
         }
 
-
+        public double Ensure360(double degrees)
+        {
+            var a = Math.Sign(degrees) * (degrees % 360);
+            if(a < 0)
+            {
+                a += 360;
+            }
+            return a;
+        }
 
         public void SetToZero()
         {
@@ -166,7 +205,11 @@ namespace FreePIE.Core.Plugins.RotoPlugin
 
         private (Direction direction, int angle) GetAngleDirection(double degrees)
         {
-            return (degrees < 0  ? Direction.Left : Direction.Right, Math.Abs(RoundDouble(degrees)));
+            var d = degrees < 0 ? Direction.Left : Direction.Right;
+
+            var ang = RoundDouble(Ensure360(degrees));
+
+            return (d, ang);
         }
     }
 
@@ -174,7 +217,9 @@ namespace FreePIE.Core.Plugins.RotoPlugin
     [Global(Name = "roto")]
     public class RotoPluginGlobal : UpdateblePluginGlobal<RotoPlugin>
     {
-        public double angle => plugin.rotoDataModel?.Angle ?? 0;
+        public double rawAngle => plugin.rotoDataModel?.Angle ?? 0;
+        public double angle => plugin.Angle;
+
 
         public string mode => plugin.Mode.ToString();
 
@@ -189,7 +234,7 @@ namespace FreePIE.Core.Plugins.RotoPlugin
 
         public void rotate(double degrees, double power = 1) => plugin.Rotate(degrees, power);
 
-        public void rotateTo(double degrees, double power = 1) => plugin.RotateTo(degrees, power);
+        public void rotateTo(RotoDirection direction, double degrees, double power = 1) => plugin.RotateTo(direction, degrees, power);
 
         public void rotateClosest(double degrees, double power = 1) => plugin.RotateClosest(degrees, power);
 
@@ -200,6 +245,7 @@ namespace FreePIE.Core.Plugins.RotoPlugin
 
         public void setToZero() => plugin.SetToZero();
 
+        
         public RotoPluginGlobal(RotoPlugin plugin) : base(plugin)
         {
         }

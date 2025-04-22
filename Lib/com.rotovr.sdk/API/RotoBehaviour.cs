@@ -291,7 +291,8 @@ namespace com.rotovr.sdk
                     break;
 #endif            
                 case ModeType.FollowObject:
-                    m_Roto.SetMode(mode, new ModeParams {CockpitAngleLimit = 0, MaxPower = 10});
+                    
+                    m_Roto.SetMode(ModeType.HeadTrack, new ModeParams {CockpitAngleLimit = 0, MaxPower = 100});
 #if !NO_UNITY
                     m_Roto.FollowTarget(this, m_Target);
 #else
@@ -340,7 +341,8 @@ namespace com.rotovr.sdk
 #if !NO_UNITY
                     m_Roto.FollowTarget(this, m_Target);
 #else
-                    m_Roto.FollowTarget(this, targetFunc);
+                    if(targetFunc != null)
+                        m_Roto.FollowTarget(this, targetFunc);
 #endif
                     OnModeChanged?.Invoke(mode);
                     break;               

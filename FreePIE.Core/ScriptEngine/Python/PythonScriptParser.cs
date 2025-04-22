@@ -37,7 +37,7 @@ namespace FreePIE.Core.ScriptEngine.Python
                 )
                 .Where(info =>
                 {
-                    var m = Regex.Match(script, $@"\b{info.Name}\.").Success;
+                    var m = Regex.Match(script, $@"\b{info.Name}\b").Success;
                     return m;
                 })
                 //script.Contains(info.Name))
