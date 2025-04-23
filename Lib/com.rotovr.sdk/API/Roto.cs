@@ -677,7 +677,7 @@ namespace com.rotovr.sdk
                         var delta = Math.Abs(rotoAngle - m_RotoData.Angle);
 
 
-                        var spd = EnsureMapRange(delta, 0, 60, 5, 80);
+                        var spd = EnsureMapRange(delta, 0,60, 0, 75);
                         if (delta > 2)
                             RotateToAngle(Direction.Right, rotoAngle, (int) spd);
                     }
