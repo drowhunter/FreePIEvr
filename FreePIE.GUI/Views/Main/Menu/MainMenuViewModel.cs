@@ -148,6 +148,8 @@ namespace FreePIE.GUI.Views.Main.Menu
             {
                 CreateScriptViewModel(filePath);
             }
+            
+
         }
 
         private void AddRecentScript(string filePath)

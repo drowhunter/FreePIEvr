@@ -260,6 +260,9 @@ namespace FreePIE.GUI.Shells
             settingsManager.Settings.Height = Height;
 
             settingsManager.Settings.OpenDocuments = Scripts.Where(_ => _.FilePath != null).Select(_ =>  _.FilePath).ToList();
+
+            settingsManager.Settings.ActiveDocument = activeDocument.FilePath;
+
             persistanceManager.Save();
             var layoutSerializer = new XmlLayoutSerializer(DockingManager);
             layoutSerializer.Serialize(paths.GetDataPath(dockingConfig));

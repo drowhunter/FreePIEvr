@@ -238,14 +238,14 @@ namespace FreePIE.Core.Plugins.RotoPlugin
 
         public void rotateClosest(double degrees, double power = 1) => plugin.RotateClosest(degrees, power);
 
-        public void switchMode(RotoModeType mode, Func<float> targetFunc = null)// double limit = 1, double maxPower = 0, RotoMovementMode movementMode = RotoMovementMode.Smooth) 
-            => plugin.SwitchMode(mode, targetFunc );// limit, maxPower, movementMode);
+        public void switchMode(RotoModeType mode, Func<float> targetFunc = null) 
+            => plugin.SwitchMode(mode, targetFunc );
 
         public void setPower(double power = .5) => plugin.SetPower(power);
 
-        public void setToZero() => plugin.SetToZero();
+        //public void setToZero() => plugin.SetToZero();
 
-        
+
         public RotoPluginGlobal(RotoPlugin plugin) : base(plugin)
         {
         }

@@ -230,6 +230,10 @@ namespace com.rotovr.sdk
             }
 
 #else
+            if (m_ObservableTarget != null)
+                m_ObservableTarget = null;
+            
+            GC.Collect();
             if (m_ConnectionType == ConnectionType.Chair)
             {
                 UsbConnector.Instance.OnConnectionStatus -= OnConnectionStatusChange;

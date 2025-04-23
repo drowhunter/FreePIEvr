@@ -18,6 +18,8 @@ namespace FreePIE.Core.Model
 
         public int Height { get; set; } = 720;
 
+        public string ActiveDocument { get; set; }
+
         public Settings()
         {
             PluginSettings = new List<PluginSetting>();

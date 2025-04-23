@@ -192,11 +192,12 @@ namespace FreePIE.Core.Plugins
         public override void Stop()
         {
             _cancellationTokenSource?.Cancel();
+            udp?.Dispose();
         }
 
     }
 
-    [Global(Name = "yawvr")]
+    [Global(Name = "gamelink")]
     public class YawGamelinkGlobal : UpdateblePluginGlobal<YawGamelinkPlugin>
     {
         public float yaw => plugin.Data.yaw;
