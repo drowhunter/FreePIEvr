@@ -1,10 +1,16 @@
-﻿using System;
+﻿using com.rotovr.sdk.Telemetry;
+
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 #if !NO_UNITY
 using UnityEngine;
+#else
+
 #endif
 
 
@@ -43,11 +49,11 @@ namespace com.rotovr.sdk
         Transform m_ObservableTarget;
         Coroutine m_TargetRoutine;
 #else
-        Func<float> m_ObservableTarget;
+        Func<float?> m_ObservableTarget;
         CancellationTokenSource m_CancelSource;
 #endif
         bool m_IsInit;
-        float m_StartTargetAngle;
+        float? m_StartTargetAngle = null;
         int m_StartRotoAngle;
         ConnectionType m_ConnectionType;
 
@@ -252,7 +258,7 @@ namespace com.rotovr.sdk
         /// Sets the mode for the RotoVR chair with specific mode parameters.
         /// </summary>
         /// <param name="mode">The mode to set for the chair (e.g., HeadTrack, FreeMode).</param>
-        /// <param name="modeParams">The mode parameters (e.g., power, angle limits) to configure the chair in the specified moFollowde.</param>
+        /// <param name="modeParams">The mode parameters (e.g., power, deltaTargetAngle limits) to configure the chair in the specified moFollowde.</param>
         public void SetMode(ModeType mode, ModeParams modeParams)
         {
             var parametersModel = new ModeParametersModel(modeParams);
@@ -287,7 +293,7 @@ namespace com.rotovr.sdk
         }
 
         /// <summary>
-        /// Calibrates the RotoVR chair, resetting the angle based on the specified calibration mode.
+        /// Calibrates the RotoVR chair, resetting the deltaTargetAngle based on the specified calibration mode.
         /// </summary>
         /// <param name="calibrationMode">The calibration mode (e.g., set to zero, set to last position).</param>
         public void Calibration(CalibrationMode calibrationMode)
@@ -316,11 +322,11 @@ namespace com.rotovr.sdk
         }
 
         /// <summary>
-        /// Rotates the RotoVR chair to the specified angle.
+        /// Rotates the RotoVR chair to the specified deltaTargetAngle.
         /// This is applicable only in the Calibration or CockpitMode.
         /// </summary>
         /// <param name="direction">The direction in which to rotate (e.g., left or right).</param>
-        /// <param name="angle">The angle to rotate to.</param>
+        /// <param name="angle">The deltaTargetAngle to rotate to.</param>
         /// <param name="power">The power of rotation (valid range is 0-100).</param>
         public void RotateToAngle(Direction direction, int angle, int power)
         {
@@ -346,9 +352,9 @@ namespace com.rotovr.sdk
         }
 
         /// <summary>
-        /// Rotates the chair to the closest angle, choosing the best direction automatically.
+        /// Rotates the chair to the closest deltaTargetAngle, choosing the best direction automatically.
         /// </summary>
-        /// <param name="angle">The target angle to rotate to.</param>
+        /// <param name="angle">The target deltaTargetAngle to rotate to.</param>
         /// <param name="power">The power of rotation (valid range is 0-100).</param>
         public void RotateToClosestAngleDirection(int angle, int power)
         {
@@ -376,9 +382,9 @@ namespace com.rotovr.sdk
         }
 
         /// <summary>
-        /// Will rotate chair on specific angle with specified direction.
+        /// Will rotate chair on specific deltaTargetAngle with specified direction.
         /// </summary>
-        /// <param name="angle">Rotation angle.</param>
+        /// <param name="angle">Rotation deltaTargetAngle.</param>
         /// <param name="direction">Rotation direction.</param>
         /// <param name="power">Rotational power. Can range from 0 to 100.</param>
         public void Rotate(Direction direction, int angle, int power)
@@ -468,47 +474,41 @@ namespace com.rotovr.sdk
             }
         }
 #else
-        private float GetTargetAngle()
+        private float? GetTargetAngle()
         {
-
-            int targetAngle = m_RotoData?.Angle ?? 0;
-
-            
-
             if (m_ObservableTarget != null)
             {
-#if !NO_UNITY
-                targetAngle = m_ObservableTarget.eulerAngles.y;
-#else
-                var a = m_ObservableTarget();
-                targetAngle = (int) Math.Abs(a % 360) * Math.Sign(a);
-               
-                if (targetAngle < 0)
-                    targetAngle += 360;
-               
-
-#endif
+                var targetAngle = m_ObservableTarget();               
+                if(targetAngle == null)
+                {
+                    m_StartTargetAngle = null;
+                } 
+                else if (m_StartTargetAngle == null)
+                {
+                    m_StartTargetAngle = targetAngle;
+                    m_StartRotoAngle = m_RotoData.Angle;
+                }
+                
+                 return targetAngle;
             }
 
-            return targetAngle;
+            return null;
         }
 
         /// <summary>
         /// Follow rotation of a target object
         /// </summary>
         /// <param name="behaviour">Target that will be used as the rotation preference.</param>
-        /// <param name="target">Target function which returns a rotation to follow</param>
-        public void FollowTarget(RotoBehaviour behaviour, Func<float> target)
+        /// <param name="targetFunc">Target function which returns a rotation to follow</param>
+        public void FollowTarget(RotoBehaviour behaviour, Func<float?> targetFunc)
         {
-            m_ObservableTarget = target;
+            m_ObservableTarget = targetFunc;
 
-            var targetAngle = GetTargetAngle();
+            //var targetAngle = GetTargetAngle();
 
-            m_StartTargetAngle = NormalizeAngle(targetAngle);
-            m_StartRotoAngle = m_RotoData.Angle;
-
+            //m_StartTargetAngle = NormalizeAngle(targetAngle);
+            //m_StartRotoAngle = m_RotoData.Angle;
             
-
             if (m_CancelSource != null && !m_CancelSource.IsCancellationRequested)
             {
                 m_CancelSource.Cancel(); 
@@ -649,6 +649,17 @@ namespace com.rotovr.sdk
             return Math.Max(Math.Min(MapRange(x, xMin, xMax, yMin, yMax), Math.Max(yMin, yMax)), Math.Min(yMin, yMax));
         }
 
+        struct testdata
+        {
+            public int ActualAngle;
+
+            public int TargetAngle;
+
+            public int Power;
+
+            public int goalAngleDiff;
+        }
+
         void FollowTargetRoutine()
         {
             if (m_ObservableTarget == null)
@@ -657,36 +668,52 @@ namespace com.rotovr.sdk
             {
                 Thread.Sleep(500);
 
-                var modeParams = new ModeParams
-                {
-                    CockpitAngleLimit = 30,
-                    MaxPower = 30
-                };
+                //SetMode(ModeType.HeadTrack, new ModeParams
+                //{
+                //    CockpitAngleLimit = 30,
+                //    MaxPower = 100
+                //});
 
-                //SetMode(ModeType.HeadTrack, modeParams);
+                MmfTelemetry<testdata> tel = new MmfTelemetry<testdata>(new() {  Name = "RotoVR", Create = true  });
 
                 while (!m_CancelSource.IsCancellationRequested)
                 {
 
-                    var currentAngle = (int) GetTargetAngle();
-                    var angle = Math.Abs(currentAngle) - m_StartTargetAngle;
-
-                    if (angle != 0)
+                    var currentTargetAngle =GetTargetAngle();
+                    if (currentTargetAngle != null && m_StartTargetAngle != null)
                     {
-                        angle = NormalizeAngle(angle);
+                        var deltaTargetAngle = currentTargetAngle.Value - m_StartTargetAngle.Value;
 
-                        var rotoAngle = (int)(m_StartRotoAngle + angle);
-                        rotoAngle = NormalizeAngle(rotoAngle);
+                        if (deltaTargetAngle != 0)
+                        {
+                            deltaTargetAngle = NormalizeAngle(deltaTargetAngle);
 
-                        var delta = Math.Abs(rotoAngle - m_RotoData.Angle);
+                            // apply the change in target angle to the starting roto angle,
+                            // goalAngle is now the angle the roto "wants to be at"
+                            var goalAngle = NormalizeAngle((int)(m_StartRotoAngle + deltaTargetAngle)); ;
 
 
-                        var spd = EnsureMapRange(delta, 0,60, 0, 75);
-                        if (delta > 2)
-                            RotateToAngle(Direction.Right, rotoAngle, (int) spd);
+                            // get the difference between the goal and the current roto angle
+                            int goalAngleDiff = Math.Abs(goalAngle - m_RotoData.Angle);
+
+                            if (goalAngleDiff > 2)
+                            {
+                                // speed will scale based on how close to goal
+                                var spd = (int) EnsureMapRange(goalAngleDiff, 0, 45, 30, 40);
+
+                                tel.Send(new testdata
+                                {
+                                    ActualAngle = m_RotoData.Angle,
+                                    TargetAngle = goalAngle,
+                                    Power = spd,
+                                    goalAngleDiff = goalAngleDiff
+                                });
+                                
+                                RotateToAngle(Direction.Right, goalAngle, spd);
+                            }
+                        }
                     }
 
-                    
                     Thread.Sleep(100);
                 }
 

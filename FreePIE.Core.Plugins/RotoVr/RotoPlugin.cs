@@ -164,7 +164,7 @@ namespace FreePIE.Core.Plugins.RotoPlugin
             Roto.RotateToClosestAngleDirection(RoundDouble(Ensure360(degrees)), RoundDouble(p));
         }
 
-        public void SwitchMode(RotoModeType mode, Func<float> targetFunc = null)//, double limit, double power, RotoMovementMode movementMode)
+        public void SwitchMode(RotoModeType mode, Func<float?> targetFunc = null)//, double limit, double power, RotoMovementMode movementMode)
         {            
             //var l = RoundDouble(Maths.EnsureMapRange(limit, 0, 1, 60, 140));
             //var p = RoundDouble( Maths.EnsureMapRange(power, 0, 1, 30, 100));
@@ -238,7 +238,7 @@ namespace FreePIE.Core.Plugins.RotoPlugin
 
         public void rotateClosest(double degrees, double power = 1) => plugin.RotateClosest(degrees, power);
 
-        public void switchMode(RotoModeType mode, Func<float> targetFunc = null) 
+        public void switchMode(RotoModeType mode, Func<float?> targetFunc = null) 
             => plugin.SwitchMode(mode, targetFunc );
 
         public void setPower(double power = .5) => plugin.SetPower(power);

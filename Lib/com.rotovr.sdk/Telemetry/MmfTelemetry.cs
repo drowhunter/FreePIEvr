@@ -8,12 +8,12 @@ using System.Runtime.InteropServices;
 using System.IO;
 using System;
 
-namespace FreePIE.Core.Plugins.Telemetry
+namespace com.rotovr.sdk.Telemetry
 {
-    internal class MmfTelemetryConfig
+    internal class MmfTelemetryConfig 
     {
-        public string Name { get; set; } = "MmfTelemetry";
-
+        public string Name { get; set; } = "MmfTelemetry"; 
+        
         public bool Create { get; set; } = false;
 
         public string MutexName { get; set; } = null;
@@ -85,7 +85,7 @@ namespace FreePIE.Core.Plugins.Telemetry
             }
             TData data = default;
 
-            _accessor?.Read(0, out data);
+            _accessor?.Read(0, out  data);
             if (Config.MutexName != null && _mutex != null)
             {
                 _mutex.ReleaseMutex();
@@ -105,7 +105,7 @@ namespace FreePIE.Core.Plugins.Telemetry
         {
             if ((_accessor != null))
             {
-                if (Config.MutexName != null)
+                if(Config.MutexName != null )
                 {
                     if (_mutex == null)
                     {
@@ -116,16 +116,16 @@ namespace FreePIE.Core.Plugins.Telemetry
                             mutexCreated = Mutex.TryOpenExisting(Config.MutexName, out _mutex);
                     }
 
-                    if (_mutex != null)
+                    if(_mutex != null)
                     {
                         _mutex.WaitOne();
                     }
                 }
                 _accessor?.Write(0, ref data);
 
-                if (Config.MutexName != null && _mutex != null)
+                if(Config.MutexName != null && _mutex != null)
                 {
-                    _mutex.ReleaseMutex();
+                    _mutex.ReleaseMutex();                    
                 }
 
                 return _dataSize;
@@ -174,6 +174,7 @@ namespace FreePIE.Core.Plugins.Telemetry
             try
             {
                 _mmf = MemoryMappedFile.OpenExisting(Config.Name);
+                _accessor = _mmf.CreateViewAccessor();
                 return 0;
             }
             catch (UnauthorizedAccessException)
@@ -192,12 +193,34 @@ namespace FreePIE.Core.Plugins.Telemetry
             return Task.Run(async () =>
             {
                 int result = 1;
-                var cts = new CancellationTokenSource(timeout);
-                do
+                using var cts = new CancellationTokenSource(timeout);
+                try
                 {
-                    result = TryOpen();
-                    await Task.Delay(4000, cancellationToken);
-                } while (result != 0 || cancellationToken.IsCancellationRequested || cts.Token.IsCancellationRequested);
+                    do
+                    {
+                        result = TryOpen();
+                        switch (result)
+                        {
+                            case 1:
+                                await Task.Delay(4000, cancellationToken);
+                                break;
+                            case 2:
+                                cts.Cancel();
+                                break;
+
+
+                        }
+
+                    } while (result != 0 && (!cancellationToken.IsCancellationRequested || !cts.Token.IsCancellationRequested));
+                }
+                catch (TaskCanceledException)
+                {
+                    // Handle the cancellation exception if needed
+                }
+                catch (OperationCanceledException)
+                {
+                    // Handle the cancellation exception if needed
+                }
 
                 return result;
 

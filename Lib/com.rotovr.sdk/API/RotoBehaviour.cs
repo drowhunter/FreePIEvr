@@ -266,7 +266,7 @@ namespace com.rotovr.sdk
         /// </summary>
         /// <param name="mode">The mode to switch to.</param>
         /// <param name="targetFunc"> Function to specify a target for the Follow Object mode.</param>
-        public void SwitchMode(ModeType mode, Func<float> targetFunc = null)
+        public void SwitchMode(ModeType mode, Func<float?> targetFunc = null)
         {
 #if !NO_UNITY
            m_Roto.StopRoutine(this);
@@ -315,7 +315,7 @@ namespace com.rotovr.sdk
 
             m_Roto.StopRoutine(this);
 #else
-        public void SwitchMode(ModeType mode, ModeParams modeParams, Func<float> targetFunc = null)
+        public void SwitchMode(ModeType mode, ModeParams modeParams, Func<float?> targetFunc = null)
         {
             m_Roto.StopRoutine(this);
 

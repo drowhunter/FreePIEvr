@@ -32,6 +32,9 @@
 		<None Remove="**\*.asmdef" />
 		<None Remove="**\*.gitignore" />
 	</ItemGroup>
+	<ItemGroup>
+	  <PackageReference Include="System.Text.Json" Version="9.0.4" />
+	</ItemGroup>
 	<!--<ItemGroup>
 		<Content Include="Plugins\HIDApi.dll">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
