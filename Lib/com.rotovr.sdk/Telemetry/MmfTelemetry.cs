@@ -2,8 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System.IO.MemoryMappedFiles;
-
-
 using System.Runtime.InteropServices;
 using System.IO;
 using System;
@@ -28,10 +26,42 @@ namespace com.rotovr.sdk.Telemetry
         }
     }
 
+    internal static class MmfTelemetryExtensions
+    {
+        #nullable enable
+        public static MemoryMappedFile SetSecurityInfo(this MemoryMappedFile mmf,  SecurityInformation securityInformation = SecurityInformation.DACL_SECURITY_INFORMATION)
+        {
+            if (SetSecurityInfoByHandle(mmf.SafeMemoryMappedFileHandle,1, (uint)securityInformation, null, null, null, null) != 0)
+            {
+                var errorCode = Marshal.GetLastWin32Error();
+
+                throw new Exception($"MemoryMappedFile set security failed. Error code: {errorCode} - {new System.ComponentModel.Win32Exception(errorCode).Message}");
+            }
+
+            return mmf;
+        }
+
+        [DllImport("advapi32.dll", EntryPoint = "SetSecurityInfo", CallingConvention = CallingConvention.Winapi,  SetLastError = true, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        private static extern uint SetSecurityInfoByHandle(SafeHandle handle, uint objectType, uint securityInformation,  byte[]? owner, byte[]? group, byte[]? dacl, byte[]? sacl);
+
+#nullable disable
+        public enum ObjectType : uint
+        {
+            SE_KERNEL_OBJECT = 1
+        }
+
+        public enum SecurityInformation : uint
+        {
+            OWNER_SECURITY_INFORMATION = 0x00000001,
+            GROUP_SECURITY_INFORMATION = 0x00000002,
+            DACL_SECURITY_INFORMATION = 0x00000004,
+            SACL_SECURITY_INFORMATION = 0x00000008
+        }
+    }
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>")]
 
-    internal class MmfTelemetry<TData> : TelemetryBase<TData, MmfTelemetryConfig>
-        where TData : struct
+    internal class MmfTelemetry<TData> : TelemetryBase<TData, MmfTelemetryConfig>  where TData : struct
     {
 
         private MemoryMappedFile _mmf;
@@ -48,19 +78,8 @@ namespace com.rotovr.sdk.Telemetry
         {
             if (config.Create)
             {
-                var res = CreateOrOpen()
-                    .ContinueWith(t =>
-                    {
-                        if (t.Result == 0)
-                        {
-                            _accessor = _mmf.CreateViewAccessor();
-                        }
-                        else
-                        {
-                            throw new Exception($"Failed to create or open memory mapped file. Error code: {t.Result}");
-                        }
-                    });
-            }
+                _ = CreateOrOpen();
+            }      
         }
 
 
@@ -142,7 +161,10 @@ namespace com.rotovr.sdk.Telemetry
             _mutex = null;
         }
 
-        public Task<int> CreateOrOpen()
+        
+    
+
+    public Task<int> CreateOrOpen()
         {
             if (_accessor != null)
             {
@@ -154,7 +176,9 @@ namespace com.rotovr.sdk.Telemetry
                 try
                 {
                     string scope = Config.IsGlobal ? "Global\\" : "";
-                    _mmf = MemoryMappedFile.CreateOrOpen(scope + Config.Name, Marshal.SizeOf<TData>());
+
+
+                    _mmf = MemoryMappedFile.CreateOrOpen(scope + Config.Name, Marshal.SizeOf<TData>()).SetSecurityInfo();
                     _accessor = _mmf.CreateViewAccessor();
                     return 0;
                 }
@@ -173,7 +197,9 @@ namespace com.rotovr.sdk.Telemetry
         {
             try
             {
-                _mmf = MemoryMappedFile.OpenExisting(Config.Name);
+                var scope = Config.IsGlobal ? "Global\\" : "";
+
+                _mmf = MemoryMappedFile.OpenExisting(scope + Config.Name);
                 _accessor = _mmf.CreateViewAccessor();
                 return 0;
             }
@@ -229,4 +255,6 @@ namespace com.rotovr.sdk.Telemetry
         }
 
     }
+
+    
 }

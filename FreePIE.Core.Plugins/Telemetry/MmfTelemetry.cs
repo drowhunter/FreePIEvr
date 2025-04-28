@@ -28,10 +28,42 @@ namespace FreePIE.Core.Plugins.Telemetry
         }
     }
 
+    internal static class MmfTelemetryExtensions
+    {
+
+        public static MemoryMappedFile SetSecurityInfo(this MemoryMappedFile mmf, SecurityInformation securityInformation = SecurityInformation.DACL_SECURITY_INFORMATION)
+        {
+            if (SetSecurityInfoByHandle(mmf.SafeMemoryMappedFileHandle, 1, (uint)securityInformation, null, null, null, null) != 0)
+            {
+                var errorCode = Marshal.GetLastWin32Error();
+
+                throw new Exception($"MemoryMappedFile set security failed. Error code: {errorCode} - {new System.ComponentModel.Win32Exception(errorCode).Message}");
+            }
+
+            return mmf;
+        }
+
+        [DllImport("advapi32.dll", EntryPoint = "SetSecurityInfo", CallingConvention = CallingConvention.Winapi, SetLastError = true, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        private static extern uint SetSecurityInfoByHandle(SafeHandle handle, uint objectType, uint securityInformation, byte[] owner, byte[] group, byte[] dacl, byte[] sacl);
+
+
+        public enum ObjectType : uint
+        {
+            SE_KERNEL_OBJECT = 1
+        }
+
+        public enum SecurityInformation : uint
+        {
+            OWNER_SECURITY_INFORMATION = 0x00000001,
+            GROUP_SECURITY_INFORMATION = 0x00000002,
+            DACL_SECURITY_INFORMATION = 0x00000004,
+            SACL_SECURITY_INFORMATION = 0x00000008
+        }
+    }
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>")]
 
-    internal class MmfTelemetry<TData> : TelemetryBase<TData, MmfTelemetryConfig>
-        where TData : struct
+    internal class MmfTelemetry<TData> : TelemetryBase<TData, MmfTelemetryConfig>  where TData : struct
     {
 
         private MemoryMappedFile _mmf;
@@ -48,19 +80,8 @@ namespace FreePIE.Core.Plugins.Telemetry
         {
             if (config.Create)
             {
-                var res = CreateOrOpen()
-                    .ContinueWith(t =>
-                    {
-                        if (t.Result == 0)
-                        {
-                            _accessor = _mmf.CreateViewAccessor();
+                _ = CreateOrOpen();
                         }
-                        else
-                        {
-                            throw new Exception($"Failed to create or open memory mapped file. Error code: {t.Result}");
-                        }
-                    });
-            }
         }
 
 
@@ -154,7 +175,9 @@ namespace FreePIE.Core.Plugins.Telemetry
                 try
                 {
                     string scope = Config.IsGlobal ? "Global\\" : "";
-                    _mmf = MemoryMappedFile.CreateOrOpen(scope + Config.Name, Marshal.SizeOf<TData>());
+
+
+                    _mmf = MemoryMappedFile.CreateOrOpen(scope + Config.Name, Marshal.SizeOf<TData>()).SetSecurityInfo();
                     _accessor = _mmf.CreateViewAccessor();
                     return 0;
                 }
@@ -174,6 +197,7 @@ namespace FreePIE.Core.Plugins.Telemetry
             try
             {
                 _mmf = MemoryMappedFile.OpenExisting(Config.Name);
+                _accessor = _mmf.CreateViewAccessor();
                 return 0;
             }
             catch (UnauthorizedAccessException)
@@ -192,12 +216,14 @@ namespace FreePIE.Core.Plugins.Telemetry
             return Task.Run(async () =>
             {
                 int result = 1;
-                var cts = new CancellationTokenSource(timeout);
-                do
-                {
-                    result = TryOpen();
-                    await Task.Delay(4000, cancellationToken);
-                } while (result != 0 || cancellationToken.IsCancellationRequested || cts.Token.IsCancellationRequested);
+                using(var cts = new CancellationTokenSource(timeout))
+                {                
+                    do
+                    {
+                        result = TryOpen();
+                        await Task.Delay(4000, cancellationToken);
+                    } while (result != 0 || cancellationToken.IsCancellationRequested || cts.Token.IsCancellationRequested);
+				}
 
                 return result;
 
