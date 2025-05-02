@@ -12,11 +12,11 @@ namespace com.rotovr.sdk.Telemetry
     {
         public string Name { get; set; } = "MmfTelemetry"; 
         
-        public bool Create { get; set; } = false;
+        public bool Create { get; set; }
 
-        public string MutexName { get; set; } = null;
+        public string MutexName { get; set; }
 
-        public bool IsGlobal { get; set; } = true;
+        public bool IsGlobal { get; set; }
 
         public MmfTelemetryConfig() { }
 
@@ -79,7 +79,11 @@ namespace com.rotovr.sdk.Telemetry
             if (config.Create)
             {
                 _ = CreateOrOpen();
-            }      
+            }
+            else
+            {
+                _ = TryOpen();
+            }
         }
 
 
@@ -161,10 +165,10 @@ namespace com.rotovr.sdk.Telemetry
             _mutex = null;
         }
 
-        
-    
 
-    public Task<int> CreateOrOpen()
+        
+
+        public Task<int> CreateOrOpen()
         {
             if (_accessor != null)
             {
@@ -178,7 +182,11 @@ namespace com.rotovr.sdk.Telemetry
                     string scope = Config.IsGlobal ? "Global\\" : "";
 
 
-                    _mmf = MemoryMappedFile.CreateOrOpen(scope + Config.Name, Marshal.SizeOf<TData>()).SetSecurityInfo();
+                    _mmf = MemoryMappedFile.CreateOrOpen(scope + Config.Name, Marshal.SizeOf<TData>());
+                    if(Config.IsGlobal)
+                        _mmf.SetSecurityInfo();
+
+
                     _accessor = _mmf.CreateViewAccessor();
                     return 0;
                 }
