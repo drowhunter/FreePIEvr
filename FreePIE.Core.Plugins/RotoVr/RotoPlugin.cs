@@ -88,6 +88,7 @@ namespace FreePIE.Core.Plugins.RotoPlugin
         public override Action Start()
         {
             Roto = new RotoBehaviour();
+            //Roto.ConnectionType = ConnectionType.Simulation;
             Roto.OnModeChanged += _roto_OnModeChanged;
             Roto.OnConnectionStatusChanged += _roto_OnConnectionStatusChanged;
             Roto.OnDataChanged += _roto_OnDataChanged;

@@ -73,6 +73,10 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.6.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.6.1\lib\net462\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
     <Reference Include="System.Speech" />
     <Reference Include="System.Windows.Forms" />
     <!--<Reference Include="Tobii.EyeX.Client.Net20">
@@ -112,7 +116,7 @@
     <Compile Include="MouseKeyboard\MouseKeyIO.cs" />
     <Compile Include="MouseKeyboard\MousePlugin.cs" />
     <Compile Include="OpenTrackPlugin.cs" />
-    <Compile Include="RotoVr\GlobalEnums.cs" />
+    <Compile Include="RotoVr\RotoEnums.cs" />
     <Compile Include="RotoVr\RotoPlugin.cs" />
     <Compile Include="Telemetry\ByteConverters.cs" />
     <Compile Include="Telemetry\MmfTelemetry.cs" />

@@ -48,7 +48,7 @@ namespace FreePIE.Core.Plugins
         }
     }
 
-    class YawGLByteConverter : IByteConvertor<YawGLData>
+    public class YawGLByteConverter : IByteConvertor<YawGLData>
     {
         static Regex rot = new Regex($@"Y\[(?<yaw>-?[\d.]+)\]P\[(?<pitch>-?[\d.]+)\]R\[(?<roll>-?[\d.]+)\]");
 

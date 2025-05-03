@@ -1,11 +1,12 @@
-﻿using com.rotovr.sdk.Telemetry;
+﻿
+using com.rotovr.sdk.Telemetry;
 using com.rotovr.sdk.Utility;
 
 using System;
-using System.Collections;
+
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
+
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,7 +43,7 @@ namespace com.rotovr.sdk
             return s_Roto;
         }
 
-        private int _followPower = 100;
+        
 
         RotoDataModel m_RotoData = new();
         DeviceDataModel m_ConnectedDevice;
@@ -64,11 +65,15 @@ namespace com.rotovr.sdk
 
         EnforcedQueue<(double x, double y)> m_directions = new(6);
 
+        ILerper m_yawInterpolator = new Lerper(90);
+
         public float m_AngularVelocity
         {
             get
             {
-                var x = m_Queue.ToArray();
+                (DateTime time, int angle)[] x;
+                
+                x = m_Queue.ToArraySafe();
                 
                 List<float> avg = new List<float>();
 
@@ -209,15 +214,18 @@ namespace com.rotovr.sdk
        
         void OnModelChangeHandler(RotoDataModel model)
         {
+            
             m_Queue.Enqueue((DateTime.Now, model.Angle));
             
-            testPacket.ActualAngle = m_RotoData.Angle;
-            testPacket.AngularVelocity = m_AngularVelocity;
+            m_yawInterpolator.UpdateYaw(model.Angle);
 
-            tel.Send(testPacket);
-            oXRMC.yaw = -model.Angle;
+            //testPacket.ActualAngle = m_RotoData.Angle;
+            //testPacket.AngularVelocity = m_AngularVelocity;
 
-            mComp.Send(oXRMC);
+            //tel.Send(testPacket);
+            //oXRMC.yaw = -model.Angle;
+
+            //mComp.Send(oXRMC);
 
             if (model.Mode != m_RotoData.Mode)
             {
@@ -306,6 +314,7 @@ namespace com.rotovr.sdk
 #endif
         }
 
+        int _followPower;
         /// <summary>
         /// Sets the mode for the RotoVR chair with specific mode parameters.
         /// </summary>
@@ -553,6 +562,8 @@ namespace com.rotovr.sdk
             // Start a background thread named FollowTargetRoutine pointing to FollowTargetRoutine async function passing the cancellation token
             m_ObservableTarget = targetFunc;
 
+            
+
             var t = new Thread(async () =>
             {
                 try
@@ -710,7 +721,7 @@ namespace com.rotovr.sdk
 
             public int Power;
 
-            public int goalAngleDiff;
+            public int Delta;
 
             public int AntiJump;
 
@@ -718,7 +729,12 @@ namespace com.rotovr.sdk
 
             public float AvgTargetAngle;
 
-            public float Brakepoint;
+            public float PreciseAngle;
+
+            public float OldFPS;
+
+            public float NewFPS;
+
         }
 
         public struct SixDofTracker
@@ -776,11 +792,14 @@ namespace com.rotovr.sdk
                 //});
 
                 //m_CancelSource.IsCancellationRequested
+                m_yawInterpolator.OnAngleUpdate += M_yawInterpolator_OnAngleUpdate;
+                _ = m_yawInterpolator.StartInterpolationLoopAsync(cancellationToken);
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    int goalAngle = 0, delta = 0, spd = 0;
-                    float brakepoint = 0;
+                    float goalAngle = 0, delta = 0;
+                    int power = 0;
+                   
                     var currentTargetAngle =GetTargetAngle();
 
                     double avgAngle = 0;
@@ -795,9 +814,13 @@ namespace com.rotovr.sdk
 
                             // apply the change in target angle to the starting roto angle,
                             // goalAngle is now the angle the roto "wants to be at"
-                            goalAngle = NormalizeAngle((int)(m_StartRotoAngle + deltaTargetAngle)); ;
-                            m_directions.Enqueue(AngleToDirection(goalAngle));
-                            avgAngle = CalculateAverage(m_directions.ToArray());
+                            
+                            goalAngle = NormalizeAngle(m_StartRotoAngle + deltaTargetAngle); 
+                            
+                            m_directions.Enqueue(AngleToDirectionVector(goalAngle));
+
+                            //avgAngle = CalculateAverage(m_directions.ToArray());
+                            avgAngle = CalcAvg();
 
                             // get the difference between the goal and the current roto angle
                             delta = Math.Abs((int)Math.Round(avgAngle) - m_RotoData.Angle);
@@ -812,14 +835,12 @@ namespace com.rotovr.sdk
                                 
 
 
-                                brakepoint = (float) EnsureMapRange(m_AngularVelocity, 0, 40, 5, 60);
+                                //brakepoint = (float) EnsureMapRange(m_AngularVelocity, 0, 40, 5, 60);
 
                                 // speed will scale based on how close to goal
-                                spd = (int) EnsureMapRange(delta, 0, 60, 5, 50);
+                                power = (int) EnsureMapRange(delta, 0, 50, 1, 50);                                
 
-                                
-
-                                RotateToAngle(Direction.Right, (int)Math.Round(avgAngle), spd);
+                                RotateToAngle(Direction.Right, (int)Math.Round(avgAngle), power);
                             }
                             else
                             {
@@ -830,18 +851,18 @@ namespace com.rotovr.sdk
 
                     lock (testObj)
                     {
-                        testPacket.TargetAngle = goalAngle;
+                        testPacket.TargetAngle =  (int) goalAngle;
                         testPacket.AvgTargetAngle = (float) avgAngle ;
-                        testPacket.Power = spd;
-                        testPacket.goalAngleDiff = delta;
+                        testPacket.Power = power;
+                        testPacket.Delta = (int) delta;
                         testPacket.AntiJump = m_AntiJump;
-                        testPacket.Brakepoint = brakepoint;
+                        //testPacket.Brakepoint = brakepoint;
                     }
                     //tel.Send(new TestPacket
                     //{
                     //    //ActualAngle = m_RotoData.Angle,
                     //    TargetAngle = goalAngle,
-                    //    Power = spd,
+                    //    Power = power,
                     //    delta = delta,
                     //    AntiJump = m_AntiJump
                     //});
@@ -853,11 +874,43 @@ namespace com.rotovr.sdk
             }
         }
 
-        
+        private void M_yawInterpolator_OnAngleUpdate(double angle)
+        {
+            testPacket.ActualAngle = m_RotoData.Angle;
+            testPacket.AngularVelocity = m_AngularVelocity;
+            testPacket.PreciseAngle = (float) angle;
+            testPacket.OldFPS = m_yawInterpolator.OldFPS;
+            testPacket.NewFPS = m_yawInterpolator.NewFPS;
+            tel.Send(testPacket);
+            oXRMC.yaw = -angle;
+
+            mComp.Send(oXRMC);
+        }
+
+
 #endif
+
+        double CalcAvg()
+        {
+            var avgVector = m_directions.CalculateAverage(((double x, double y) acc, (double x, double y) curr) =>
+            {
+                return (acc.x + curr.x, acc.y + curr.y);
+            }, (sum) =>
+            {
+                var mag = Math.Sqrt(sum.x * sum.x + sum.y * sum.y);
+                var avg = (sum.x / mag, sum.y / mag);
+                return avg;
+            });
+
+            var retval = NormalizeAngle((float)(Math.Atan2(avgVector.y, avgVector.x) * (180 / Math.PI))); ;
+
+            return retval;
+        }
 
         double CalculateAverage(IEnumerable<(double x, double y)> values)
         {
+
+
             double sumX = 0;
             double sumY = 0;
             foreach (var value in values)
@@ -878,7 +931,7 @@ namespace com.rotovr.sdk
             return NormalizeAngle((float)(Math.Atan2(sumY, sumX) * (180 / Math.PI)));
         }
 
-        (double x, double y) AngleToDirection(float degrees)
+        (double x, double y) AngleToDirectionVector(float degrees)
         {
             return new(Math.Cos(degrees * Math.PI / 180), Math.Sin(degrees * Math.PI / 180));
         }

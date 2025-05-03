@@ -27,7 +27,7 @@ namespace com.rotovr.sdk
 #endif
         ConnectionType m_ConnectionType;
 
-        internal ConnectionType ConnectionType
+        public ConnectionType ConnectionType
         {
             get => m_ConnectionType;
             set => m_ConnectionType = value;

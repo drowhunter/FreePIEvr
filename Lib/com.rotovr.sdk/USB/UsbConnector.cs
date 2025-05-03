@@ -72,7 +72,7 @@ namespace com.rotovr.sdk
 
                     while (m_reaDevice)
                     {
-                        await Task.Delay(30);
+                        //await Task.Delay(100);
                         ReadDevice();
                     }
                 });
