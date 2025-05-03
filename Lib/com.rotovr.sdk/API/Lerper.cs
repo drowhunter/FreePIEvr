@@ -67,20 +67,6 @@ namespace com.rotovr.sdk
             }
         }
 
-        //public void StartInterpolationLoop()
-        //{
-        //    new Thread(() =>
-        //    {
-        //        while (true)
-        //        {
-        //            double interpolatedYaw = GetInterpolatedYaw();
-        //            //Console.WriteLine($"Interpolated Yaw: {interpolatedYaw:F2}°");
-        //            Thread.Sleep(newMs); 
-        //        }
-        //    })
-        //    { IsBackground = true }.Start();
-        //}
-        
         public Task StartInterpolationLoopAsync(CancellationToken cancellationToken = default)
         {
             //return Task.Factory.StartNew(async () =>

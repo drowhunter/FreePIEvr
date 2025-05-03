@@ -13,16 +13,16 @@ namespace com.rotovr.sdk
         private double previousYaw = 0.0; // Previous yaw for interpolation
         private double interpolationFactor = 0.0; // Smooth interpolation step
         private readonly object lockObj = new object(); // Thread safety
-        private double oldMs;
-        private readonly double newMs;
+        private double oldMs = 1;
+        private readonly double newMs = 1;
         private DateTime lastSensorUpdate; // Track last yaw update time
 
         public float OldFPS => (float)(1000 / oldMs);
 
         DateTime lastNewUpdate = DateTime.UtcNow;
 
-        float FPS = 1;
-        public float NewFPS => FPS;
+        float _fps = 1;
+        public float NewFPS => _fps;
 
         /// <summary>
         /// Event triggered when chair data changes.
@@ -32,7 +32,7 @@ namespace com.rotovr.sdk
         public Slerper(int newFps)
         {
             lastSensorUpdate = DateTime.UtcNow;
-            this.newMs = Math.Min(1, 1000 / newFps);
+            this.newMs = Math.Max(1, 1000 / newFps);
         }
 
         public void UpdateYaw(double degrees)
@@ -40,7 +40,7 @@ namespace com.rotovr.sdk
             lock (lockObj)
             {
                 var now = DateTime.UtcNow;
-                oldMs = Math.Min(1, (now - lastSensorUpdate).TotalMilliseconds);
+                oldMs = Math.Max(1, (now - lastSensorUpdate).TotalMilliseconds);
                 lastSensorUpdate = now;
                 previousYaw = latestYaw;
                 latestYaw = degrees;
@@ -78,7 +78,7 @@ namespace com.rotovr.sdk
                 {
                     while (!cancellationToken.IsCancellationRequested)
                     {
-                        FPS = (float) DateTime.UtcNow.Subtract(lastNewUpdate).TotalMilliseconds;
+                        _fps = 1000f / (float)(DateTime.UtcNow - lastNewUpdate).TotalMilliseconds;
                         lastNewUpdate = DateTime.UtcNow;
                         double interpolatedYaw = GetInterpolatedYaw();
                         OnAngleUpdate?.Invoke(interpolatedYaw);
