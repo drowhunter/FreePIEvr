@@ -65,7 +65,7 @@ namespace com.rotovr.sdk
 
         EnforcedQueue<(double x, double y)> m_directions = new(6);
 
-        ILerper m_yawInterpolator = new Lerper(90);
+        ILerper m_yawInterpolator = new Lerper();
 
         public float m_AngularVelocity
         {
@@ -217,7 +217,7 @@ namespace com.rotovr.sdk
             
             m_Queue.Enqueue((DateTime.Now, model.Angle));
             
-            m_yawInterpolator.UpdateYaw(model.Angle);
+            m_yawInterpolator.UpdateValue(model.Angle);
 
             //testPacket.ActualAngle = m_RotoData.Angle;
             //testPacket.AngularVelocity = m_AngularVelocity;
@@ -792,8 +792,9 @@ namespace com.rotovr.sdk
                 //});
 
                 //m_CancelSource.IsCancellationRequested
-                m_yawInterpolator.OnAngleUpdate += M_yawInterpolator_OnAngleUpdate;
-                _ = m_yawInterpolator.StartInterpolationLoopAsync(cancellationToken);
+                m_yawInterpolator.OnValueUpdate += M_yawInterpolator_OnAngleUpdate;
+
+                m_yawInterpolator.Start(90, cancellationToken);
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
@@ -866,7 +867,7 @@ namespace com.rotovr.sdk
                     //    delta = delta,
                     //    AntiJump = m_AntiJump
                     //});
-                    await Task.Delay(100);
+                    await Task.Delay(66);
                     //Thread.Sleep(100);
                 }
                                 
@@ -874,13 +875,13 @@ namespace com.rotovr.sdk
             }
         }
 
-        private void M_yawInterpolator_OnAngleUpdate(double angle)
+        private void M_yawInterpolator_OnAngleUpdate(float angle)
         {
             testPacket.ActualAngle = m_RotoData.Angle;
             testPacket.AngularVelocity = m_AngularVelocity;
             testPacket.PreciseAngle = (float) angle;
-            testPacket.OldFPS = m_yawInterpolator.OldFPS;
-            testPacket.NewFPS = m_yawInterpolator.NewFPS;
+            testPacket.OldFPS = m_yawInterpolator.OriginalFramerate;
+            testPacket.NewFPS = m_yawInterpolator.TargetFramerate;
             tel.Send(testPacket);
             oXRMC.yaw = -angle;
 
