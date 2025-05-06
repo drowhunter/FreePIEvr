@@ -734,6 +734,10 @@ namespace com.rotovr.sdk
 
             public float MaxSpeedPct;
 
+            public int Direction;
+
+            public float TempTarget;
+
         }
 
         public struct SixDofTracker
@@ -798,15 +802,18 @@ namespace com.rotovr.sdk
 
                 m_yawInterpolator.Start(90, cancellationToken);
 
+                int? tempTarget = null;
+
+
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     float goalAngle = 0, delta = 0;
 
                     int power = 0;
 
-                    var currentTargetAngle =GetTargetAngle();
+                    var currentTargetAngle = GetTargetAngle();
 
-                    double avgAngle = 0;
+                    int avgAngle = 0;
 
                     if (currentTargetAngle != null && m_StartTargetAngle != null)
                     {
@@ -821,17 +828,19 @@ namespace com.rotovr.sdk
                             
                             goalAngle = NormalizeAngle(m_StartRotoAngle + deltaTargetAngle); 
                             
+                            
                             m_directions.Enqueue(AngleToDirectionVector(goalAngle));
                                                        
-                            avgAngle = CalcAvg();
+                            avgAngle = (int) Math.Round(CalcAvg());
 
+                            
                             // get the difference between the goal and the current roto angle
-                            delta = Math.Abs((int)Math.Round(avgAngle) - m_RotoData.Angle);
+                            delta = Math.Abs(avgAngle - m_RotoData.Angle);
                             if(delta > 180)
                             {
                                 delta = 360 - delta;
                             }
-
+                           
                             if (delta > 2)
                             {
                                 m_AntiJump = 0;
@@ -841,13 +850,32 @@ namespace com.rotovr.sdk
                                 // speed will scale based on how close to goal
                                 var pwr = 90;
                                 var brakePoint = pwr <= 80 ? 50 : 60;
-                                power = (int) EnsureMapRange(delta, 0, brakePoint, 1, pwr);                                
+                                power = (int) EnsureMapRange(delta, 0, brakePoint, 1, pwr);
+                                
+                                var dir = avgAngle == (int)testPacket.AvgTargetAngle ? 0 : 
+                                    GetDirection(avgAngle, (int)testPacket.AvgTargetAngle) == 0 ? -1 : 1;
 
-                                RotateToAngle(Direction.Right, (int)Math.Round(avgAngle), power);
+
+                                if (tempTarget == null && dir != testPacket.Direction && testPacket.AngularVelocity >  20)
+                                {
+                                    var tdir = testPacket.Direction == 0 ? 1 : testPacket.Direction;
+                                    tempTarget = testPacket.ActualAngle +tdir * brakePoint;  //355 +60 = 415
+                                    tempTarget = NormalizeAngle((int)tempTarget);
+                                    testPacket.TempTarget = (float)tempTarget; //for visualization
+
+                                }
+                                testPacket.Direction = dir;
+                                
+                                RotateToAngle(Direction.Right, tempTarget ?? avgAngle , power);
                             }
                             else
                             {
                                 m_AntiJump++;
+                                if(tempTarget != null)
+                                {
+                                    tempTarget = null;
+                                    testPacket.TempTarget = 0;
+                                }
                             }
                         }
                     }
@@ -860,7 +888,7 @@ namespace com.rotovr.sdk
                         testPacket.SpeedPct = power;
                         testPacket.Delta = (int) delta;
                         testPacket.AntiJump = m_AntiJump;
-
+                       
                     }
 
                     await Task.Delay(66);
@@ -869,6 +897,8 @@ namespace com.rotovr.sdk
                 m_ObservableTarget = null;
             }
         }
+
+
 
         private void M_yawInterpolator_OnAngleUpdate(float angle)
         {
