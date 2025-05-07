@@ -860,7 +860,7 @@ namespace com.rotovr.sdk
                                 if (tempTarget == null && dir != previousValues.Direction && previousValues.AngularVelocity >  30)
                                 {
                                     power = previousValues.Power;
-                                    var dist = (int) (previousValues.Power / 100f) * brakePoint;
+                                    var dist = (int) ((previousValues.Power / 100f) * brakePoint);
 
                                     var change = previousValues.Direction == 0 ? 1 : previousValues.Direction;
 
