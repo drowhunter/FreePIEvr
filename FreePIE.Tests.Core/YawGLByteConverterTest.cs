@@ -1,4 +1,7 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 using FreePIE.Core.Plugins;
@@ -100,5 +103,146 @@ namespace FreePIE.Tests.Core
             Assert.IsTrue(resultString.Contains("V[5,5,5,60]"));
             Assert.IsTrue(resultString.Contains("F[3,3]"));
         }
+
+        [TestMethod]
+        public void ShouldWork()
+        {
+            var m_Queue = new EnforcedQueue<(long elapsedMs, float angle)>(3);
+            m_Queue.Enqueue((10, 221));
+            m_Queue.Enqueue((11, 221.002625f));
+
+            m_Queue.Enqueue((12, 246f));
+
+            var av = CalculateAngularVelocity(m_Queue);
+
+            Assert.IsTrue(av <= 360 && av >= 0);
+        }
+
+
+
+        
+
+        private float CalculateAngularVelocity(EnforcedQueue<(long elapsedMs, float angle)> m_Queue)
+        {
+
+
+            (long elapsedTime, float angle)[] x;
+
+            x = m_Queue.ToArraySafe();
+
+            List<float> avg = new List<float>();
+
+            for (var i = 0; i < x.Length; i++)
+            {
+                if (i == 0 || x[i].elapsedTime == 0)
+                    continue;
+
+                var dA = Math.Abs(x[i].angle - x[i - 1].angle);
+                if (dA > 180)
+                    dA = 360 - dA;
+
+                var dT = x[i].elapsedTime;  //(x[i].time - x[i - 1].time).TotalMilliseconds;
+                
+                var v = (dA / dT) * 1000f;
+                
+                
+                if(v < 120)
+                    avg.Add(v);
+                
+
+            }
+            if (avg.Any())
+            {
+                var retval = avg.Average();
+
+                return retval;
+            }
+
+            return 0;
+        }
+
+    }
+
+    internal class EnforcedQueue<T> : IEnumerable<T>
+    {
+
+        private int _limit = 0;
+
+        private Queue<T> _queue;
+
+        private readonly object _lock = new object();
+
+
+        public EnforcedQueue(int capacity)
+        {
+            _queue = new Queue<T>(capacity);
+            _limit = capacity;
+        }
+
+
+        public int Count
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _queue.Count;
+                }
+            }
+        }
+
+        public T[] ToArraySafe()
+        {
+            lock (_lock)
+            {
+                return _queue.ToArray();
+            }
+        }
+
+        public void Enqueue(T item)
+        {
+            lock (_lock)
+            {
+                if (_queue.Count >= _limit)
+                {
+                    _queue.Dequeue();
+                }
+
+                _queue.Enqueue(item);
+            }
+        }
+
+        public T CalculateAverage(Func<T, T, T> accumulator, Func<T, T> divisor)
+        {
+            T sum = this.Aggregate(accumulator);
+
+            return divisor(sum);
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return ((IEnumerable<T>)_queue).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable)_queue).GetEnumerator();
+        }
+
+        //public T Sum(Func<T,T, T> summer)
+        //{
+
+        //    return this.ToArray().Aggregate(summer);
+        //}
+
+        //public T Average(Func<T, T, T> summer)
+        //{
+        //    var count = this.Count;
+        //    if (count == 0)
+        //        return default(T);
+        //    var sum = this.Sum(summer);
+
+
+        //}
     }
 }

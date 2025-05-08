@@ -115,7 +115,11 @@ namespace com.rotovr.sdk
 
                         Task.Run(() => OnValueUpdate?.Invoke(interpolatedValue));
 
-                        SleepAccurate(_targetMs - _interpolatedStopWatch.ElapsedMilliseconds);
+                        var timeleft = (_targetMs - _interpolatedStopWatch.ElapsedMilliseconds);
+                        SleepAccurate(timeleft);
+                        //if(timeleft > 0)
+                        //    Thread.Sleep(timeleft);
+
                         _fps = 1000f / Math.Max(1, _interpolatedStopWatch.ElapsedMilliseconds);
                         _interpolatedStopWatch.Restart();
                     }
@@ -139,7 +143,7 @@ namespace com.rotovr.sdk
                 return;
 
             var stopwatch = Stopwatch.StartNew();
-            while (stopwatch.Elapsed.TotalMilliseconds < _targetMs)
+            while (stopwatch.ElapsedMilliseconds < ms)
             {
                 Thread.SpinWait(1);
             }

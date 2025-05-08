@@ -56,7 +56,7 @@ namespace com.rotovr.sdk
 #else
         Func<float?> m_ObservableTarget;
         CancellationTokenSource m_CancelSource;
-        Stopwatch Stopwatch = new Stopwatch();
+        Stopwatch _angleUpdateStopwatch = new Stopwatch();
 #endif
         bool m_IsInit;
         float? m_StartTargetAngle = null;
@@ -69,32 +69,40 @@ namespace com.rotovr.sdk
 
         ILerper m_yawInterpolator = new Lerper();
 
-        private float calculateAngularVelocity(float angle)
+        public float CalculateAngularVelocity()
         {
                 
             
-                (long elapsedTime, float angle)[] x;
+            (long elapsedTime, float angle)[] x;
                 
-                x = m_Queue.ToArraySafe();
+            x = m_Queue.ToArraySafe();
                 
-                List<float> avg = new List<float>();
+            var avg = new List<float>();
 
-                for (var i = 0; i < x.Length; i++)
-                {
-                    if (i == 0)
-                        continue;
-                    var dA = Math.Abs(x[i].angle - x[i - 1].angle);
-                    if (dA > 180)
-                        dA = 360 - dA;
+            for (var i = 0; i < x.Length; i++)
+            {
+                if (i == 0 || x[i].elapsedTime == 0)
+                    continue;
 
-                    var dT = x[i].elapsedTime;  //(x[i].time - x[i - 1].time).TotalMilliseconds;
-                    if (dT > 0) {                         
-                        avg.Add((dA / dT) * 1000f);
-                    } 
-                    
-                }
-                if(avg.Any())
-                    return avg.Average();
+                var dA = Math.Abs(x[i].angle - x[i - 1].angle);
+                if (dA > 180)
+                    dA = 360 - dA;
+
+                var dT = x[i].elapsedTime;  //(x[i].time - x[i - 1].time).TotalMilliseconds;
+                
+                var v = (dA / dT) * 1000f;
+
+                //if velocity is impossible ignore it
+                if (v < 120) 
+                    avg.Add(v);
+
+            }
+
+            if (avg.Any())
+            {
+                var retval = avg.Average();
+                return retval;
+            }
 
             return 0;
         }
@@ -551,7 +559,8 @@ namespace com.rotovr.sdk
             if (m_CancelSource != null && !m_CancelSource.IsCancellationRequested)
             {
                 m_CancelSource.Cancel(); 
-
+                //wait for m_CancelSource to be cancelled
+                
             }
             
             m_CancelSource = new CancellationTokenSource();
@@ -728,12 +737,13 @@ namespace com.rotovr.sdk
 
             public float PreciseAngle;
 
-            public float OldFPS;
+            public float RecieveFPS;
 
-            public float NewFPS;
+            public float LerpedFPS;
 
             public float MaxSpeedPct;
 
+            public float SendFPS;
         }
 
         public struct SixDofTracker
@@ -777,7 +787,7 @@ namespace com.rotovr.sdk
         MmfTelemetry<TestPacket> tel = new (new() { Name = "RotoVR", Create = true });
         MmfTelemetry<SixDofTracker> mComp = new(new("SimRacingStudioMotionRigPose", true));
 
-        int followMs = 1000/15;
+        int sendFps = 15;
 
         async Task  FollowTargetRoutine(CancellationToken cancellationToken)
         {
@@ -798,8 +808,14 @@ namespace com.rotovr.sdk
 
                 m_yawInterpolator.Start(90, cancellationToken);
 
+                
+                int targetMs = 1000 / sendFps;
+
+                var sendWatch = Stopwatch.StartNew();
+
                 while (!cancellationToken.IsCancellationRequested)
                 {
+                    
                     float goalAngle = 0, delta = 0;
 
                     int power = 0;
@@ -852,8 +868,8 @@ namespace com.rotovr.sdk
                         }
                     }
 
-                    lock (testObj)
-                    {
+                    //lock (testObj)
+                    //{
                         testPacket.TargetAngle =  (int) goalAngle;
                         testPacket.AvgTargetAngle = (float) avgAngle ;
                         testPacket.MaxSpeedPct = Math.Max(testPacket.MaxSpeedPct, power);
@@ -861,29 +877,50 @@ namespace com.rotovr.sdk
                         testPacket.Delta = (int) delta;
                         testPacket.AntiJump = m_AntiJump;
 
-                    }
+                    //}
+                    var elapsedTimeLeft = targetMs - sendWatch.ElapsedMilliseconds;
+                    //SleepAccurate(elapsedTimeLeft);
+                    //await Task.Delay((int)elapsedTimeLeft);
+                    //Thread.Sleep(66);
+                    if((int)elapsedTimeLeft > 0)
+                        Thread.Sleep((int)elapsedTimeLeft);
 
-                    await Task.Delay(66);
+                    testPacket.SendFPS = 1000f / Math.Max(1, sendWatch.ElapsedMilliseconds);
+                    sendWatch.Restart();
+                    
                 }
                                 
                 m_ObservableTarget = null;
             }
         }
 
+        private void SleepAccurate(float ms)
+        {
+            if (ms <= float.Epsilon)
+                return;
+
+            var stopwatch = Stopwatch.StartNew();
+            while (stopwatch.Elapsed.TotalMilliseconds < ms)
+            {
+                Thread.SpinWait(1);
+            }
+            stopwatch.Stop();
+        }
+
         private void M_yawInterpolator_OnAngleUpdate(float angle)
         {
             //float previousAngle = m_Queue.LastOrDefault().angle;
-            var es = Stopwatch.ElapsedMilliseconds == 0 ? 1 : Stopwatch.ElapsedMilliseconds;
+            var es = _angleUpdateStopwatch.ElapsedMilliseconds == 0 ? 1 : _angleUpdateStopwatch.ElapsedMilliseconds;
             //var av = Math.Abs(angle - previousAngle) /es ;
 
-            m_Queue.Enqueue((Stopwatch.ElapsedMilliseconds, angle));
-            Stopwatch.Restart();
+            m_Queue.Enqueue((_angleUpdateStopwatch.ElapsedMilliseconds, angle));
+            _angleUpdateStopwatch.Restart();
 
             testPacket.ActualAngle = m_RotoData.Angle;
-            testPacket.AngularVelocity = calculateAngularVelocity(angle);
+            testPacket.AngularVelocity = CalculateAngularVelocity();
             testPacket.PreciseAngle = angle;
-            testPacket.OldFPS = m_yawInterpolator.OriginalFramerate;
-            testPacket.NewFPS = es <= 1 ?  0 : 1000 / es;// m_yawInterpolator.TargetFramerate;
+            testPacket.RecieveFPS = m_yawInterpolator.OriginalFramerate;
+            testPacket.LerpedFPS = es <= 1 ?  0 : 1000 / es;// m_yawInterpolator.TargetFramerate;
             tel.Send(testPacket);
             oXRMC.yaw = -angle;
 
