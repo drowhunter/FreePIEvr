@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -45,8 +46,12 @@ namespace com.rotovr.sdk
 
         void Log(string message)
         {
+#if DEBUG
 #if !NO_UNITY
             Debug.Log(message);
+#else
+            Console.WriteLine(message);
+#endif
 #endif
         }
 
@@ -404,8 +409,10 @@ namespace com.rotovr.sdk
 
             Task.Run(() =>
             {
+                var s = Stopwatch.StartNew();
                 var result = Native.WriteFile(m_device, PrepareWriteBuffer(m_usbMessage));
-                Log($"Turn To Angle success: {result}");
+                s.Stop();
+                Log($"Turn To Angle success: {result} ({s.ElapsedMilliseconds} ms)");
             });
         }
 

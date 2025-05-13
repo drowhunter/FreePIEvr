@@ -65,7 +65,7 @@ namespace com.rotovr.sdk
 
         EnforcedQueue<(long elapsedMs, float angle)> m_Queue = new (3);
 
-        EnforcedQueue<(double x, double y)> m_directions = new(6);
+        EnforcedQueue<(double x, double y)> m_directions = new(1);
 
         ILerper m_yawInterpolator = new Lerper();
 
@@ -643,7 +643,7 @@ namespace com.rotovr.sdk
                 {
                     deltaTime += Time.deltaTime;
 
-                    if (deltaTime > 0.1f)
+                    if (deltaTime > 0.01f)
                     {
                         var currentAngle = (int)m_ObservableTarget.eulerAngles.y;
                         var angle = currentAngle - m_StartTargetAngle;
@@ -725,7 +725,7 @@ namespace com.rotovr.sdk
 
             public int TargetAngle;
 
-            public int SpeedPct;
+            public int Power;
 
             public int Delta;
 
@@ -741,9 +741,15 @@ namespace com.rotovr.sdk
 
             public float LerpedFPS;
 
-            public float MaxSpeedPct;
+            public float MaxVelocity;
 
             public float SendFPS;
+
+            public int Direction;
+
+            public int StopAngle;
+
+            public int Braking;
         }
 
         public struct SixDofTracker
@@ -787,7 +793,7 @@ namespace com.rotovr.sdk
         MmfTelemetry<TestPacket> tel = new (new() { Name = "RotoVR", Create = true });
         MmfTelemetry<SixDofTracker> mComp = new(new("SimRacingStudioMotionRigPose", true));
 
-        int sendFps = 15;
+        int sendFps = 50;
 
         async Task  FollowTargetRoutine(CancellationToken cancellationToken)
         {
@@ -813,6 +819,8 @@ namespace com.rotovr.sdk
 
                 var sendWatch = Stopwatch.StartNew();
 
+                testPacket.Braking = 30;
+
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     
@@ -823,6 +831,7 @@ namespace com.rotovr.sdk
                     var currentTargetAngle =GetTargetAngle();
 
                     double avgAngle = 0;
+                    
 
                     if (currentTargetAngle != null && m_StartTargetAngle != null)
                     {
@@ -838,8 +847,8 @@ namespace com.rotovr.sdk
                             goalAngle = NormalizeAngle(m_StartRotoAngle + deltaTargetAngle); 
                             
                             m_directions.Enqueue(AngleToDirectionVector(goalAngle));
-                                                       
-                            avgAngle = CalcAvg();
+
+                            avgAngle = goalAngle; // CalcAvg();
 
                             // get the difference between the goal and the current roto angle
                             delta = Math.Abs((int)Math.Round(avgAngle) - m_RotoData.Angle);
@@ -855,9 +864,31 @@ namespace com.rotovr.sdk
                                 //brakepoint = (float) EnsureMapRange(m_AngularVelocity, 0, 40, 5, 60);
 
                                 // speed will scale based on how close to goal
-                                var pwr = 90;
-                                var brakePoint = pwr <= 80 ? 50 : 60;
-                                power = (int) EnsureMapRange(delta, 0, brakePoint, 1, pwr);                                
+                                var pwr = 60;
+                                var brakePoint = 10;// pwr <= 80 ? 10 : 60;
+
+                                if (testPacket.Power > 40 && testPacket.Braking == 30)
+                                {
+                                    testPacket.Braking = 20;
+                                    power = testPacket.Power;
+                                }
+                                else if (testPacket.Power < 22 && testPacket.Braking == 20)
+                                {
+                                    testPacket.Braking = 30;
+                                    power = testPacket.Power;
+                                }
+                                else
+                                {
+                                    power = (int)EnsureMapRange(delta, 0, brakePoint, testPacket.Braking, pwr);
+                                }
+
+
+                                var dir = (int)GetDirection((int)avgAngle, (int)testPacket.AvgTargetAngle);
+                                if(dir != testPacket.Direction)
+                                {
+                                 
+                                }
+                                testPacket.Direction = dir * 10;
 
                                 RotateToAngle(Direction.Right, (int)Math.Round(avgAngle), power);
                             }
@@ -872,10 +903,11 @@ namespace com.rotovr.sdk
                     //{
                         testPacket.TargetAngle =  (int) goalAngle;
                         testPacket.AvgTargetAngle = (float) avgAngle ;
-                        testPacket.MaxSpeedPct = Math.Max(testPacket.MaxSpeedPct, power);
-                        testPacket.SpeedPct = power;
+                        testPacket.MaxVelocity = Math.Max(testPacket.MaxVelocity, power);
+                        testPacket.Power = power;
                         testPacket.Delta = (int) delta;
                         testPacket.AntiJump = m_AntiJump;
+                        
 
                     //}
                     var elapsedTimeLeft = targetMs - sendWatch.ElapsedMilliseconds;

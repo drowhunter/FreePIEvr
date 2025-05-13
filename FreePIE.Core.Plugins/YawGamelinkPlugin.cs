@@ -70,39 +70,52 @@ namespace FreePIE.Core.Plugins
             return degrees;
         }
 
+        YawGLData previousData;
+
         public YawGLData FromBytes(byte[] data)
         {
             var dataString = Encoding.ASCII.GetString(data);
+
+
             var yawGLData = new YawGLData();
 
-            try
+            if (data.Length > 4)
             {
-                var r = rot.Match(dataString);
-                if (r.Success)
+                try
                 {
-                    yawGLData.yaw = FullCircle(float.Parse(r.Groups["yaw"].Value, c));      //-180-180
-                    yawGLData.pitch = FullCircle(float.Parse(r.Groups["pitch"].Value, c));  //-180-180
-                    yawGLData.roll = FullCircle(float.Parse(r.Groups["roll"].Value, c));    //-180-180
-                }
+                    var r = rot.Match(dataString);
+                    if (r.Success)
+                    {
+                        
+                        yawGLData.yaw = FullCircle(float.Parse(r.Groups["yaw"].Value, c));      //-180-180
+                        yawGLData.pitch = FullCircle(float.Parse(r.Groups["pitch"].Value, c));  //-180-180
+                        yawGLData.roll = FullCircle(float.Parse(r.Groups["roll"].Value, c));    //-180-180
+                        
+                    }
 
-                var v = vibes.Match(dataString);
-                if (v.Success)
+                    var v = vibes.Match(dataString);
+                    if (v.Success)
+                    {
+                        yawGLData.amp = byte.Parse(v.Groups["amp"].Value, c) / byte.MaxValue;
+                        yawGLData.hz = byte.Parse(v.Groups["hz"].Value, c) / byte.MaxValue;
+                    }
+
+                    var f = fan.Match(dataString);
+                    if (f.Success)
+                    {
+                        yawGLData.fan = byte.Parse(f.Groups["fan"].Value, c) / byte.MaxValue;
+                    }
+
+                    previousData = yawGLData;
+                }
+                catch
                 {
-                    yawGLData.amp = byte.Parse(v.Groups["amp"].Value, c)/ byte.MaxValue;
-                    yawGLData.hz = byte.Parse(v.Groups["hz"].Value, c)/ byte.MaxValue;
+                    // Handle parsing errors if necessary  
                 }
-
-                var f = fan.Match(dataString);
-                if (f.Success)
-                {
-                    yawGLData.fan = byte.Parse(f.Groups["fan"].Value, c) / byte.MaxValue;
-                }
-
-                
             }
-            catch
+            else
             {
-                // Handle parsing errors if necessary  
+                yawGLData = previousData;
             }
 
             return yawGLData;
