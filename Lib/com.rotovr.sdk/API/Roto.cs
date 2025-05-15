@@ -794,6 +794,7 @@ namespace com.rotovr.sdk
         MmfTelemetry<SixDofTracker> mComp = new(new("SimRacingStudioMotionRigPose", true));
 
         int sendFps = 50;
+        int m_homeAngle = 0;
 
         async Task  FollowTargetRoutine(CancellationToken cancellationToken)
         {
@@ -802,6 +803,7 @@ namespace com.rotovr.sdk
             else
             {
                 await Task.Delay(500);
+
 
                 //SetMode(ModeType.HeadTrack, new ModeParams
                 //{
@@ -820,6 +822,8 @@ namespace com.rotovr.sdk
                 var sendWatch = Stopwatch.StartNew();
 
                 testPacket.Braking = 30;
+
+                m_homeAngle = m_RotoData.Angle;
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
@@ -866,15 +870,16 @@ namespace com.rotovr.sdk
                                 // speed will scale based on how close to goal
                                 var pwr = 60;
                                 var brakePoint = 10;// pwr <= 80 ? 10 : 60;
-
-                                if (testPacket.Power > 40 && testPacket.Braking == 30)
+                                var pmin = 20;
+                                var pmax = 30;
+                                if (testPacket.Power > 40 && testPacket.Braking == pmax)
                                 {
-                                    testPacket.Braking = 20;
+                                    testPacket.Braking = pmin;
                                     power = testPacket.Power;
                                 }
-                                else if (testPacket.Power < 22 && testPacket.Braking == 20)
+                                else if (testPacket.Power < 22 && testPacket.Braking == pmin)
                                 {
-                                    testPacket.Braking = 30;
+                                    testPacket.Braking = pmax;
                                     power = testPacket.Power;
                                 }
                                 else
@@ -884,10 +889,10 @@ namespace com.rotovr.sdk
 
 
                                 var dir = (int)GetDirection((int)avgAngle, (int)testPacket.AvgTargetAngle);
-                                if(dir != testPacket.Direction)
-                                {
+                                //if(dir != testPacket.Direction)
+                                //{
                                  
-                                }
+                                //}
                                 testPacket.Direction = dir * 10;
 
                                 RotateToAngle(Direction.Right, (int)Math.Round(avgAngle), power);
@@ -954,7 +959,7 @@ namespace com.rotovr.sdk
             testPacket.RecieveFPS = m_yawInterpolator.OriginalFramerate;
             testPacket.LerpedFPS = es <= 1 ?  0 : 1000 / es;// m_yawInterpolator.TargetFramerate;
             tel.Send(testPacket);
-            oXRMC.yaw = -angle;
+            oXRMC.yaw = -NormalizeAngle(angle - m_homeAngle);
 
             mComp.Send(oXRMC);
         }
