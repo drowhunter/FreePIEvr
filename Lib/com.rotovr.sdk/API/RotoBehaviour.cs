@@ -289,14 +289,17 @@ namespace com.rotovr.sdk
                     m_Roto.SetMode(mode, new ModeParams {CockpitAngleLimit = 0, MaxPower = 30});
                     m_Roto.StartHeadTracking(this, m_Target);
                     break;
-#endif            
+#else
+                case ModeType.JoystickMode:
+#endif
                 case ModeType.FollowObject:
                     
                     m_Roto.SetMode(ModeType.HeadTrack, new ModeParams {CockpitAngleLimit = 0, MaxPower = 100});
 #if !NO_UNITY
                     m_Roto.FollowTarget(this, m_Target);
 #else
-                    m_Roto.FollowTarget(this, targetFunc);
+                    m_Roto.FollowTarget(this, targetFunc, mode == ModeType.JoystickMode);
+                   
 #endif
                     OnModeChanged?.Invoke(mode);
                     break;
@@ -335,17 +338,21 @@ namespace com.rotovr.sdk
                     m_Roto.SetMode(mode, modeParams);
                     m_Roto.StartHeadTracking(this, m_Target);
                     break;
+#else
+                case ModeType.JoystickMode:                    
 #endif
                 case ModeType.FollowObject:
+
                     m_Roto.SetMode(ModeType.HeadTrack, modeParams);
 #if !NO_UNITY
                     m_Roto.FollowTarget(this, m_Target);
 #else
                     if(targetFunc != null)
-                        m_Roto.FollowTarget(this, targetFunc);
+                        m_Roto.FollowTarget(this, targetFunc, mode == ModeType.JoystickMode);
 #endif
                     OnModeChanged?.Invoke(mode);
-                    break;               
+                    break;
+
 
             }
         }

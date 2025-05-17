@@ -172,9 +172,9 @@ namespace FreePIE.Core.Plugins.RotoPlugin
 
             var m = (ModeType)(byte)mode;
 
-            if (mode == RotoModeType.FollowObject )
+            if (new[] { RotoModeType.FollowObject, RotoModeType.JoystickMode }.Contains(mode) )
             {
-                Roto.SwitchMode(m, new ModeParams { CockpitAngleLimit = 0, MaxPower = 100 }, targetFunc);               
+                Roto.SwitchMode(m, new ModeParams { CockpitAngleLimit = 0, MaxPower = 100 }, targetFunc);
             }
             else //if(m == ModeType.HeadTrack)
             {
@@ -239,8 +239,7 @@ namespace FreePIE.Core.Plugins.RotoPlugin
 
         public void rotateClosest(double degrees, double power = 1) => plugin.RotateClosest(degrees, power);
 
-        public void switchMode(RotoModeType mode, Func<float?> targetFunc = null) 
-            => plugin.SwitchMode(mode, targetFunc );
+        public void switchMode(RotoModeType mode, Func<float?> targetFunc = null) => plugin.SwitchMode(mode, targetFunc );
 
         public void setPower(double power = .5) => plugin.SetPower(power);
 

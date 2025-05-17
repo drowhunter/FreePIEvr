@@ -60,6 +60,11 @@ namespace FreePIE.Core.Plugins.RotoVr
         /// Allows the chair to follow the rotation of a specified GameObject in the scene.
         /// </summary>
         FollowObject = 0x06,
+
+        /// <summary>
+        /// Continuous mode. The chair continuously rotates based on Joystick Axis -1 to 1.
+        /// </summary>
+        JoystickMode = 0x07,
     }
 
 

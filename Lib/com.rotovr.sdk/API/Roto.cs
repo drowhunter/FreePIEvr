@@ -338,7 +338,10 @@ namespace com.rotovr.sdk
 #else
             if (m_ConnectionType == ConnectionType.Chair)
             {
-                UsbConnector.Instance.SetMode(new ModeModel(mode.ToString(), parametersModel));
+                if(mode == ModeType.JoystickMode)
+                    UsbConnector.Instance.SetMode(new ModeModel(ModeType.FollowObject.ToString(), parametersModel));
+                else
+                    UsbConnector.Instance.SetMode(new ModeModel(mode.ToString(), parametersModel));
             }
 #endif
         }
@@ -547,7 +550,7 @@ namespace com.rotovr.sdk
         /// </summary>
         /// <param name="behaviour">Target that will be used as the rotation preference.</param>
         /// <param name="targetFunc">Target function which returns a rotation to follow</param>
-        public void FollowTarget(RotoBehaviour behaviour, Func<float?> targetFunc)
+        public void FollowTarget(RotoBehaviour behaviour, Func<float?> targetFunc, bool joystickMode = false)
         {
             
 
@@ -574,7 +577,10 @@ namespace com.rotovr.sdk
             {
                 try
                 {
-                    await FollowTargetRoutine(m_CancelSource.Token);
+                    if(joystickMode)
+                        await ContinuousMovementRoutine(m_CancelSource.Token);
+                    else
+                        await FollowTargetRoutine(m_CancelSource.Token);
                 }
                 catch (Exception ex)
                 {
@@ -727,7 +733,7 @@ namespace com.rotovr.sdk
 
             public int Power;
 
-            public int Delta;
+            public float Delta;
 
             public long AntiJump;
 
@@ -804,29 +810,25 @@ namespace com.rotovr.sdk
         int sendFps = 50;
         int m_homeAngle = 0;
 
-        async Task  FollowTargetRoutine(CancellationToken cancellationToken)
+        async Task FollowTargetRoutine(CancellationToken cancellationToken)
         {
             if (m_ObservableTarget == null)
                 Debug.LogError("For FollowObject Mode you need to set target func");
             else
             {
-                await Task.Delay(500);
-                
+                await Task.Delay(500);                
                 m_yawInterpolator.OnValueUpdate += M_yawInterpolator_OnAngleUpdate;
-
                 m_yawInterpolator.Start(90, cancellationToken);
                 
                 int targetMs = 1000 / sendFps;
 
-                var sendWatch = Stopwatch.StartNew();
-
                 telemetry.MinPower = 30;
-
                 m_homeAngle = m_RotoData.Angle;
+
+                var sendWatch = Stopwatch.StartNew();                
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
-
                     var currentTargetAngle = GetTargetAngle();
 
                     if (currentTargetAngle != null && m_StartTargetAngle != null)
@@ -910,6 +912,132 @@ namespace com.rotovr.sdk
             }
         }
 
+        EnforcedQueue<float> m_xQ = new(3);
+        const float TOP_SPEED_DEG_PER_MS = 120 / 1000f;
+
+        async Task ContinuousMovementRoutine(CancellationToken cancellationToken)
+        {
+            if (m_ObservableTarget == null)
+                Debug.LogError("For FollowObject Mode you need to set target func");
+            else
+            {
+                await Task.Delay(500);
+                m_yawInterpolator.OnValueUpdate += M_yawInterpolator_OnAngleUpdate;
+                m_yawInterpolator.Start(90, cancellationToken);
+
+                int targetMs = 1000 / sendFps;
+
+
+                
+                var brakePoint = 45; // maxPower <= 80 ? 50 : 60;
+                var degreesPerFrame = TOP_SPEED_DEG_PER_MS * targetMs + brakePoint;
+
+                float prevX = 0f;
+                //var outfrac = (maxPower - 30f) + (( (maxPower - 24f) - (maxPower - 30f)) / (maxPower - 30f));
+                var sendWatch = Stopwatch.StartNew();
+
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    if (m_ObservableTarget != null)
+                    {
+                        var x = m_ObservableTarget();
+                        
+                        
+                        if (x == null )
+                        {
+                            m_StartTargetAngle = null;
+                        }
+                        else
+                        {
+                            
+                            if(Math.Abs(x.Value) > 1)
+                                x = (float)EnsureMapRange(x.Value, -1, 1, -1, 1);
+                            
+                            m_xQ.Enqueue(x.Value);
+
+                            telemetry.Delta = Math.Abs(x.Value - prevX);
+                            telemetry.MaxPower = 60;
+                            telemetry.MinPower = 30;
+                            //var outward = Math.Abs(x.Value) - Math.Abs(prevX);
+                            //var om = outward >= 0 ? 30 : 20;
+                            
+                            //var outRange = maxPower - outMin;
+                            //bool m = x.Value > .8;
+                            telemetry.AvgTargetAngle = x.Value;// m_xQ.Average();
+                            telemetry.Power = (int) EnsureMapRange(Math.Abs(telemetry.AvgTargetAngle), 0.3f, 1f, telemetry.MinPower, telemetry.MaxPower);
+                            telemetry.Direction = Math.Sign(telemetry.AvgTargetAngle) * 10;
+
+                            
+                            var offset = degreesPerFrame * Math.Sign(telemetry.AvgTargetAngle);
+                            
+                            var ang = NormalizeAngle(telemetry.PreciseAngle + offset);
+                            
+                            
+                            
+                            telemetry.TargetAngle = (int) ang; //Math.Abs(x.Value) > 0.07 ? (int)ang : 0;
+                            //telemetry.Direction = direction;
+                            
+                            RotateToAngle(Direction.Left, telemetry.TargetAngle, telemetry.Power);
+                            prevX = x.Value;
+                        }
+
+
+                    }
+
+
+
+                    //telemetry.MaxPower = Math.Max(telemetry.MaxPower, telemetry.Power);
+
+
+
+                    var elapsedTimeLeft = targetMs - sendWatch.ElapsedMilliseconds;
+                    SleepAccurate(elapsedTimeLeft);
+                    if (sendWatch.ElapsedMilliseconds != 0)
+                        telemetry.SendFPS = 1000f / Math.Max(1, sendWatch.ElapsedMilliseconds);
+                    else
+                        telemetry.SendFPS = 0;
+
+                    sendWatch.Restart();
+                }
+
+                sendWatch.Stop();
+                await SlowDownAndStop();
+                m_ObservableTarget = null;
+
+
+            }
+
+        }
+
+       
+
+        private Task<int> SlowDownAndStop()
+        {
+            return Task.Run(() =>
+            {
+                var pwr = telemetry.Power - 5;
+                if (telemetry.Power > 30)
+                {
+                    var s = Stopwatch.StartNew();
+                    for (float i = pwr; i > 20; i = i * .80f)
+                    {
+                        RotateToAngle(Direction.Right, m_RotoData.Angle + ((int)(TOP_SPEED_DEG_PER_MS * 66)), pwr);
+                        Thread.Sleep(66 - (int)s.ElapsedMilliseconds);
+                        s.Restart();
+                    }
+
+                    s.Stop();
+
+                    return Task.FromResult((int)s.ElapsedMilliseconds);
+                }
+                else
+                {
+                    telemetry = new();
+                }
+
+                return Task.FromResult(0);
+            });
+        }
         private void SleepAccurate(float ms)
         {
             if (ms <= float.Epsilon)
