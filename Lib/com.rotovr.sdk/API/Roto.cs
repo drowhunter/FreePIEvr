@@ -735,7 +735,7 @@ namespace com.rotovr.sdk
 
             public float Delta;
 
-            public long AntiJump;
+            public int AntiJump;
 
             public float AngularVelocity;
 
@@ -798,7 +798,7 @@ namespace com.rotovr.sdk
         Telemetry telemetry = new Telemetry();
         SixDofTracker oXRMC = new SixDofTracker();
 #if MMF
-        MmfTelemetry<TestPacket> tel = new (new() { Name = "RotoVR", Create = true });
+        MmfTelemetry<Telemetry> tel = new (new() { Name = "RotoVR", Create = true });
 #else
         UdpTelemetry<Telemetry> tel = new(new() { SendAddress = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 16969) });
 #endif
@@ -809,6 +809,7 @@ namespace com.rotovr.sdk
 
         int sendFps = 50;
         int m_homeAngle = 0;
+        int m_prevTargetAngle = 0;
 
         async Task FollowTargetRoutine(CancellationToken cancellationToken)
         {
@@ -836,7 +837,7 @@ namespace com.rotovr.sdk
 
                         var deltaTargetAngle = currentTargetAngle.Value - m_StartTargetAngle.Value;
 
-                        if ((int)deltaTargetAngle != 0)
+                        if ((int)deltaTargetAngle != 0 )
                         {
                             deltaTargetAngle = NormalizeAngle(deltaTargetAngle);
 
@@ -849,6 +850,7 @@ namespace com.rotovr.sdk
                             if (fDelta > 180)                            
                                 fDelta = 360 - fDelta;
                             
+                            
 
                             if (fDelta >= 1)
                             {
@@ -858,8 +860,8 @@ namespace com.rotovr.sdk
                                 var brakePoint = 10;// MaxPower <= 80 ? 10 : 60;
                                 var pmin = 20;
                                 var pmax = 30;
-                                int power = 0;
-
+                                int power = maxPower;
+                                /*
                                 if (telemetry.Power > 40 && telemetry.MinPower == pmax)
                                 {
                                     telemetry.MinPower = pmin;
@@ -873,7 +875,7 @@ namespace com.rotovr.sdk
                                 else
                                 {
                                     power = (int)EnsureMapRange(fDelta, 0, brakePoint, telemetry.MinPower, maxPower);
-                                }
+                                }*/
 
                                 telemetry.MaxPower = Math.Max(telemetry.MaxPower, power);
                                 telemetry.Power = power;
@@ -883,7 +885,13 @@ namespace com.rotovr.sdk
                                 telemetry.Direction =  dir * 10;
                                 telemetry.AvgTargetAngle = avgTargetRotoAngle;
                                 telemetry.Delta = (int)fDelta;
-                                telemetry.AntiJump = m_AntiJump;
+                                telemetry.AntiJump = (int)m_AntiJump;
+
+                                //if(fDelta < 1 && fDelta > 0.1)
+                                //{
+                                //    targetRotoAngle = (int)NormalizeAngle(fDelta + 1 *( dir == 0 ? 1 : -1));
+                                //}
+
                                 RotateToAngle(Direction.Right, (int)targetRotoAngle, power);
                             }
                             else // less than one degree of movement to you are aligned so increment the anti jump
@@ -891,7 +899,8 @@ namespace com.rotovr.sdk
                                 m_AntiJump = sendWatch.ElapsedMilliseconds;
                             }
                         }
-                       
+
+                        m_prevTargetAngle = (int)currentTargetAngle;
                     }
                     
                     var elapsedTimeLeft = targetMs - sendWatch.ElapsedMilliseconds;
@@ -964,13 +973,13 @@ namespace com.rotovr.sdk
                             //var outRange = maxPower - outMin;
                             //bool m = x.Value > .8;
                             telemetry.AvgTargetAngle = x.Value;// m_xQ.Average();
-                            telemetry.Power = (int) EnsureMapRange(Math.Abs(telemetry.AvgTargetAngle), 0.3f, 1f, telemetry.MinPower, telemetry.MaxPower);
+                            telemetry.Power = 60; //(int) EnsureMapRange(Math.Abs(telemetry.AvgTargetAngle), 0.3f, 1f, telemetry.MinPower, telemetry.MaxPower);
                             telemetry.Direction = Math.Sign(telemetry.AvgTargetAngle) * 10;
 
                             
                             var offset = degreesPerFrame * Math.Sign(telemetry.AvgTargetAngle);
                             
-                            var ang = NormalizeAngle(telemetry.PreciseAngle + offset);
+                            var ang = NormalizeAngle(m_RotoData.Angle + offset);
                             
                             
                             
