@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace FreePIE.Core.Plugins.Telemetry
 {
@@ -24,6 +25,36 @@ namespace FreePIE.Core.Plugins.Telemetry
         {
             string json = System.Text.Encoding.UTF8.GetString(data);
             return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(json);
+        }
+    }
+
+    public struct StringData
+    {
+        public string Value;
+
+        public override string ToString()
+        {
+            return Value;
+        }
+    }
+
+    public class StringByteConverter : IByteConvertor<StringData>
+    {
+        private readonly Encoding encoding;
+
+        public StringByteConverter(Encoding encoding)
+        {
+            this.encoding = encoding;
+        }
+
+        public StringData FromBytes(byte[] data)
+        {
+            return new StringData { Value = encoding.GetString(data) };
+        }
+
+        public byte[] ToBytes(StringData data)
+        {
+            return encoding.GetBytes(data.ToString());
         }
     }
 

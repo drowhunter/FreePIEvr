@@ -34,6 +34,7 @@ namespace FreePIE.Core.Plugins.Telemetry
 
         public IByteConvertor<TData> Convert;
 
+        public abstract void Dispose();
 
         protected TelemetryBase(TConfig config)
         {
@@ -47,12 +48,15 @@ namespace FreePIE.Core.Plugins.Telemetry
             OnLog?.Invoke(this, $"[{this.GetType().Name}] " + message);
         }
 
-        
+        public virtual Task<int> SendAsync(TData data, CancellationToken cancellationToken = default)
+        {
+            return Task.Run(() => Send(data), cancellationToken);
+        }
 
-        public abstract void Dispose();
-
-        public abstract Task<TData> ReceiveAsync(CancellationToken cancellationToken = default);
-
+        public virtual Task<TData> ReceiveAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.Run(() =>  Receive() , cancellationToken);
+        }
     }
 
 

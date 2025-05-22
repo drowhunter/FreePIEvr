@@ -62,6 +62,8 @@ namespace FreePIE.Core.Plugins.Telemetry
     {
         private static UdpClient udpClient;
 
+        public event Action<UdpReceiveResult, TData> OnReceiveAsync;
+
         public UdpTelemetry(UdpTelemetryConfig config) : base(config)
         {
         }
@@ -91,9 +93,13 @@ namespace FreePIE.Core.Plugins.Telemetry
         public override TData Receive()
         {
             IPEndPoint remoteEp = null;
-            var data = udpClient.Receive(ref remoteEp);
+            var bytes = udpClient.Receive(ref remoteEp);
 
-            return Convert.FromBytes(data);
+            var data = Convert.FromBytes(bytes);
+
+            OnReceiveAsync?.Invoke(new UdpReceiveResult(bytes, remoteEp), data);
+
+            return data;
 
         }
 
@@ -114,7 +120,10 @@ namespace FreePIE.Core.Plugins.Telemetry
             try
             {
                 var result = await udpClient.ReceiveAsync().WithCancellation(cancellationToken);
-                return Convert.FromBytes(result.Buffer);
+
+                var data = Convert.FromBytes(result.Buffer);
+                OnReceiveAsync?.Invoke(result, data);
+                return data;
             }
             catch (OperationCanceledException)
             {

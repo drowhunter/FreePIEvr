@@ -120,6 +120,7 @@
     <Compile Include="RotoVr\RotoPlugin.cs" />
     <Compile Include="Telemetry\ByteConverters.cs" />
     <Compile Include="Telemetry\MmfTelemetry.cs" />
+    <Compile Include="Telemetry\TcpTelemetry.cs" />
     <Compile Include="Telemetry\TelemetryBase.cs" />
     <Compile Include="Telemetry\UdpTelemetry.cs" />
     <Compile Include="vigem\DualShockOutputPlugin.cs" />
