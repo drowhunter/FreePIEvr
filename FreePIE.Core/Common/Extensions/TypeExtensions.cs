@@ -14,6 +14,7 @@ namespace FreePIE.Core.Common.Extensions
             try
             {
                 types = type.Assembly.GetTypes();
+
             }
             catch(ReflectionTypeLoadException lx)
             {
@@ -32,11 +33,17 @@ namespace FreePIE.Core.Common.Extensions
             Type[] types = new Type[] { };
             try
             {
+                
                 types = assembly.GetTypes();
             }
+            
             catch (ReflectionTypeLoadException lx)
             {
                 Debug.WriteLine(string.Join(Environment.NewLine, lx.LoaderExceptions.Select(l => l.Message)));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading types from assembly {assembly.FullName}: {ex.Message}");
             }
 
             return types;

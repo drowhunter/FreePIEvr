@@ -41,11 +41,30 @@ namespace FreePIE.Core.Plugins
             var dlls = fileSystem
                 .GetFiles(path, "*.dll")
                 .Where(dll => dll.EndsWith("dll", StringComparison.InvariantCultureIgnoreCase))
+                .Where(dll =>
+                {
+                    try
+                    {
+                        // Try to read the assembly name; unmanaged DLLs will throw
+                        AssemblyName.GetAssemblyName(dll);
+                        return true;
+                    }
+                    catch (BadImageFormatException)
+                    {
+                        // Unmanaged DLL
+                        return false;
+                    }
+                    catch (FileLoadException)
+                    {
+                        // Could not load the assembly, skip
+                        return false;
+                    }
+                })
                 .ToList();
 
             pluginTypes = dlls
                 .Select(Assembly.LoadFile)
-                .SelectMany(a => a.GetTypesSafe().Where(t => typeof (IPlugin).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract)).ToList();
+                .SelectMany(a => a.GetTypesSafe().Where(t => typeof(IPlugin).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract)).ToList();
 
             return pluginTypes;
         }
