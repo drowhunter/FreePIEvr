@@ -15,7 +15,7 @@ namespace FreePIE.Core.Common
         public static IDictionary<T, Type> GetAttributeImplementations<T>() where T : Attribute
         {
             return typeof(T)
-                .Assembly.GetTypes()
+                .Assembly.GetTypesSafe()
                 .Where(t => !t.IsAbstract)
                 .Select(t => new {Type = t, Attribute = t.GetCustomAttributes(typeof (T), false).SingleOrDefault()})
                 .Where(t => t.Attribute != null)

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using FreePIE.Core.Common;
+using FreePIE.Core.Common.Extensions;
 using FreePIE.Core.Contracts;
 using FreePIE.Core.Model;
 using FreePIE.Core.Persistence;
@@ -44,7 +45,7 @@ namespace FreePIE.Core.Plugins
 
             pluginTypes = dlls
                 .Select(Assembly.LoadFile)
-                .SelectMany(a => a.GetTypes().Where(t => typeof (IPlugin).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract)).ToList();
+                .SelectMany(a => a.GetTypesSafe().Where(t => typeof (IPlugin).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract)).ToList();
 
             return pluginTypes;
         }
@@ -97,7 +98,7 @@ namespace FreePIE.Core.Plugins
                 return globalEnumTypes;
 
             globalEnumTypes = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(a => a.GetTypes())
+                .SelectMany(a => a.GetTypesSafe())
                 .Where(t => t.GetCustomAttributes(typeof(GlobalEnum), false).Any())
                 .Distinct()
                 .ToList();
