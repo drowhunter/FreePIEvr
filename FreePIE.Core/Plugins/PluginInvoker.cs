@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
+
 using FreePIE.Core.Common;
 using FreePIE.Core.Common.Extensions;
 using FreePIE.Core.Contracts;
@@ -40,31 +42,23 @@ namespace FreePIE.Core.Plugins
             var path = paths.GetApplicationPath(pluginFolder);
             var dlls = fileSystem
                 .GetFiles(path, "*.dll")
-                .Where(dll => dll.EndsWith("dll", StringComparison.InvariantCultureIgnoreCase))
-                .Where(dll =>
-                {
-                    try
-                    {
-                        // Try to read the assembly name; unmanaged DLLs will throw
-                        AssemblyName.GetAssemblyName(dll);
-                        return true;
-                    }
-                    catch (BadImageFormatException)
-                    {
-                        // Unmanaged DLL
-                        return false;
-                    }
-                    catch (FileLoadException)
-                    {
-                        // Could not load the assembly, skip
-                        return false;
-                    }
-                })
-                .ToList();
+                .Where(dll => !Regex.IsMatch(Path.GetFileName(dll), @"^(System|Microsoft|IronPython|Nefarius|Ninject|SharpDX|Newtonsoft|com.rotovr)") && dll.EndsWith("dll", StringComparison.InvariantCultureIgnoreCase)).ToList();
+                
 
             pluginTypes = dlls
-                .Select(Assembly.LoadFile)
-                .SelectMany(a => a.GetTypesSafe().Where(t => typeof(IPlugin).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract)).ToList();
+                .Select(dll => {
+                    try
+                    {
+                        var ass = Assembly.LoadFile(dll);
+                        return ass;
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                    return null;
+                })
+                .SelectMany(a => a?.GetTypesSafe().Where(t => t  != null && typeof(IPlugin).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract)).ToList();
 
             return pluginTypes;
         }
